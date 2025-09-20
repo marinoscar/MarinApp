@@ -9,6 +9,9 @@ namespace MarinApp.Mud
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add services to the container.
+            builder.Services.AddControllers();
+
             // Add MudBlazor services
             builder.Services.AddMudServices();
 
@@ -17,6 +20,9 @@ namespace MarinApp.Mud
                 .AddInteractiveServerComponents();
 
             var app = builder.Build();
+
+            // Map controllers
+            app.MapControllers();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
