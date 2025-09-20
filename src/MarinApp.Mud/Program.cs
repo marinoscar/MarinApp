@@ -1,4 +1,5 @@
 using MarinApp.Mud.Components;
+using MarinApp.Mud.Extensions;
 using MudBlazor.Services;
 
 namespace MarinApp.Mud
@@ -18,6 +19,10 @@ namespace MarinApp.Mud
             // Add Swagger
             builder.Services.AddEndpointsApiExplorer(); 
             builder.Services.AddSwaggerGen();
+
+            // Add Swagger with API key header support
+            builder.Services.AddSwaggerWithApiKey();
+
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
