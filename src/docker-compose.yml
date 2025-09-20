@@ -1,0 +1,6 @@
+services:
+  marinapp.mud:
+    image: ${DOCKER_REGISTRY-}marinappmud
+    build:
+      context: .
+      dockerfile: MarinApp.Mud/Dockerfile
