@@ -15,6 +15,10 @@ namespace MarinApp.Mud
             // Add MudBlazor services
             builder.Services.AddMudServices();
 
+            // Add Swagger
+            builder.Services.AddEndpointsApiExplorer(); 
+            builder.Services.AddSwaggerGen();
+
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
@@ -31,6 +35,10 @@ namespace MarinApp.Mud
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint and the Swagger UI.
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
