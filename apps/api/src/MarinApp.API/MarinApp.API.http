@@ -1,6 +1,22 @@
 @MarinApp.API_HostAddress = http://localhost:5143
 
-GET {{MarinApp.API_HostAddress}}/weatherforecast/
+GET {{MarinApp.API_HostAddress}}/api/health
 Accept: application/json
+
+###
+
+POST {{MarinApp.API_HostAddress}}/api/auth/google
+Accept: application/json
+Content-Type: application/json
+
+{
+  "idToken": "your-google-id-token"
+}
+
+###
+
+GET {{MarinApp.API_HostAddress}}/api/profile/me
+Accept: application/json
+Authorization: Bearer your-api-jwt
 
 ###
