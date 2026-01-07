@@ -301,6 +301,17 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Node.js / TypeScript
+dist/
+build/
+.cache/
+.vite/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 # Visual Studio 6 build log
 *.plg
 
