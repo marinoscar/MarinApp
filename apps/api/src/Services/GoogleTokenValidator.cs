@@ -33,6 +33,8 @@ public class GoogleTokenValidator : IGoogleTokenValidator
             Audience = new[] { _authOptions.GoogleClientId }
         };
 
-        return GoogleJsonWebSignature.ValidateAsync(idToken, settings, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return GoogleJsonWebSignature.ValidateAsync(idToken, settings);
     }
 }
