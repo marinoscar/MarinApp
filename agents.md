@@ -37,7 +37,44 @@ This repository follows a **strict separation of concerns**:
 
 ---
 
-# 2. Security Standards (Hard Rules)
+# 2. Secrets & Configuration Management (Hard Rule)
+
+### Environment Variables Only
+
+All secrets and environment-specific configuration MUST be provided via
+**environment variables at the user or runtime level**.
+
+This applies to:
+- OAuth client IDs and related config
+- JWT signing keys
+- Database connection strings
+- Storage credentials (e.g., S3)
+- API keys and third-party credentials
+- Any value that differs by environment
+
+### Prohibited
+Agents MUST NOT:
+- Hardcode secrets or environment-specific values
+- Commit secrets to source control
+- Store secrets in `.env` files checked into the repo
+- Embed secrets in frontend bundles
+- Use appsettings files or config files to store secrets directly
+
+### Allowed
+Agents MAY:
+- Reference environment variables in configuration files
+- Use placeholder example values in documentation
+- Provide `.env.example` or sample config files with **NO real secrets**
+- Assume environment variables are injected via OS, shell profile, CI/CD, or container runtime
+
+### Frontend-Specific Rule
+- Frontend builds may reference **public configuration variables only**
+- Public variables must be clearly prefixed (e.g., `VITE_`, `NEXT_PUBLIC_`)
+- No private secrets are ever exposed to the browser
+
+---
+
+# 3. Security Standards (Hard Rules)
 
 Agents MUST:
 - Enforce authentication and authorization in the backend
@@ -49,28 +86,27 @@ Agents MUST:
 
 Agents MUST NOT:
 - Trust client-provided identifiers or claims without validation
-- Store secrets in frontend code
 - Implement ad-hoc crypto or token parsing
 - Expose internal errors or stack traces in API responses
 - Use wildcard CORS with credentials
 
 ---
 
-# 3. Authentication & Authorization Guidance
+# 4. Authentication & Authorization Guidance
 
 - OAuth providers may be used for login
 - The backend is responsible for issuing and validating its own access tokens
 - Tokens must be short-lived
 - Authorization decisions must live exclusively in the backend
 
-Token storage strategy (cookies vs headers) must be:
+Token storage strategy must be:
 - Explicitly chosen
 - Documented in architecture docs
 - Implemented consistently
 
 ---
 
-# 4. Backend API Standards (ASP.NET Core)
+# 5. Backend API Standards (ASP.NET Core)
 
 Agents MUST:
 - Use async/await end-to-end
@@ -89,7 +125,7 @@ Agents MUST NOT:
 
 ---
 
-# 5. Frontend Standards (React + TypeScript)
+# 6. Frontend Standards (React + TypeScript)
 
 Agents MUST:
 - Use TypeScript strictly
@@ -106,7 +142,7 @@ Agents MUST NOT:
 
 ---
 
-# 6. Documentation Is a First-Class Artifact
+# 7. Documentation Is a First-Class Artifact
 
 Agents MUST keep documentation in sync with the code.
 
@@ -125,7 +161,7 @@ Documentation drift is considered a defect.
 
 ---
 
-# 7. OpenAPI & Swagger Requirements
+# 8. OpenAPI & Swagger Requirements
 
 - Swagger must accurately reflect the current API
 - Security schemes must be defined correctly
@@ -135,7 +171,7 @@ Documentation drift is considered a defect.
 
 ---
 
-# 8. Performance & Reliability Expectations
+# 9. Performance & Reliability Expectations
 
 Agents SHOULD:
 - Design APIs that minimize round-trips
@@ -151,7 +187,7 @@ Agents MUST NOT:
 
 ---
 
-# 9. Working Style for Agents
+# 10. Working Style for Agents
 
 When implementing changes:
 1. Identify affected layers (frontend, backend, docs)
@@ -168,11 +204,11 @@ When uncertain:
 
 ---
 
-# 10. Definition of Done
+# 11. Definition of Done
 
 A change is complete when:
 - Code compiles and runs
-- Security rules are followed
+- Security and secret-handling rules are followed
 - APIs are documented and visible in Swagger
 - UI integrates correctly with the API
 - README.md and architecture.md are updated if needed
