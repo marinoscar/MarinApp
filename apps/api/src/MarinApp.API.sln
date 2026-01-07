@@ -5,7 +5,7 @@ VisualStudioVersion = 17.12.35521.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarinApp.API", "MarinApp.API.csproj", "{CA50B5D9-E6E6-43C0-8B1C-9873BA67C83B}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "NodeJS", "..\..\web\NodeJS.njsproj", "{007A39F4-67A7-49D3-A3AE-D19C0ED80D99}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "NodeJS", "..\..\web\NodeJS.esproj", "{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,12 @@ Global
 		{CA50B5D9-E6E6-43C0-8B1C-9873BA67C83B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA50B5D9-E6E6-43C0-8B1C-9873BA67C83B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA50B5D9-E6E6-43C0-8B1C-9873BA67C83B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{007A39F4-67A7-49D3-A3AE-D19C0ED80D99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{007A39F4-67A7-49D3-A3AE-D19C0ED80D99}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{007A39F4-67A7-49D3-A3AE-D19C0ED80D99}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{007A39F4-67A7-49D3-A3AE-D19C0ED80D99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76FEDCBB-0E09-4C4F-AD3B-499A0C557BEF}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

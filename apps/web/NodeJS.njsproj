@@ -11,8 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>007a39f4-67a7-49d3-a3ae-d19c0ed80d99</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>src\App.tsx</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
