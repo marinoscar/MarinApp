@@ -5,14 +5,14 @@
       "name": "localhost (Edge)",
       "type": "edge",
       "request": "launch",
-      "url": "http://localhost:1337",
+      "url": "http://localhost:5173",
       "webRoot": "${workspaceFolder}/public"
     },
     {
       "name": "localhost (Chrome)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:1337",
+      "url": "http://localhost:5173",
       "webRoot": "${workspaceFolder}/public"
     },
     {
@@ -27,7 +27,7 @@
       "stopOnEntry": true,
       "console": "externalTerminal",
       "env": {
-        "port": "1337"
+        "port": "5173"
       },
       "args": [
         ""
