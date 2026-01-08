@@ -22,6 +22,13 @@ public static class Program
 
         builder.Configuration.AddEnvironmentVariables();
 
+        var sharedGoogleClientId = builder.Configuration["VITE_GOOGLE_CLIENT_ID"];
+        if (!string.IsNullOrWhiteSpace(sharedGoogleClientId) &&
+            string.IsNullOrWhiteSpace(builder.Configuration["Auth:GoogleClientId"]))
+        {
+            builder.Configuration["Auth:GoogleClientId"] = sharedGoogleClientId;
+        }
+
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

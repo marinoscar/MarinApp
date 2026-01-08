@@ -37,4 +37,4 @@ MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
 - Secrets are provided **only via environment variables**.
 
 ## Configuration
-Environment variables are used for all secrets and environment-specific values, including the cloud PostgreSQL connection string. See `README.md` for the full list.
+Environment variables are used for all secrets and environment-specific values, including the cloud PostgreSQL connection string. The Google OAuth client ID is shared between the API and web via the `VITE_GOOGLE_CLIENT_ID` environment variable. See `README.md` for the full list.
