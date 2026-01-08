@@ -6,7 +6,7 @@ MarinApp is a monorepo with a React + TypeScript frontend and an ASP.NET Core We
 **Components**
 - **Frontend (`apps/web`)**: React + TypeScript SPA using Material UI (MUI) with a dark theme by default.
 - **Backend (`apps/api`)**: ASP.NET Core WebAPI secured with JWT bearer authentication.
-- **Persistence (planned)**: PostgreSQL for structured data and object storage (e.g., S3) for binary data. The backend will own all credentials.
+- **Persistence (planned)**: Cloud-hosted PostgreSQL for structured data and object storage (e.g., S3) for binary data. The backend will own all credentials.
 
 ## Authentication & Token Flow
 MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
@@ -24,7 +24,7 @@ MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
 ## Trust Boundaries
 - The **frontend is untrusted** and must never access databases or storage directly.
 - All authorization checks happen in the **backend**.
-- Only the backend stores or accesses credentials for external services (Google OAuth, PostgreSQL, object storage).
+- Only the backend stores or accesses credentials for external services (Google OAuth, cloud PostgreSQL, object storage).
 
 ## API Surface (Initial)
 - `POST /api/auth/google`: Exchanges a Google ID token for an API JWT.
@@ -37,4 +37,4 @@ MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
 - Secrets are provided **only via environment variables**.
 
 ## Configuration
-Environment variables are used for all secrets and environment-specific values. See `README.md` for the full list.
+Environment variables are used for all secrets and environment-specific values, including the cloud PostgreSQL connection string. See `README.md` for the full list.

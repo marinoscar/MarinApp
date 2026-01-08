@@ -6,12 +6,10 @@ MarinApp is a monorepo that hosts a React + TypeScript frontend and an ASP.NET C
 - `apps/api` — ASP.NET Core WebAPI
 - `apps/web` — React + TypeScript SPA (MUI)
 - `docs/` — architecture and design documentation
-- `infra/docker` — local infrastructure (PostgreSQL)
 
 ## Prerequisites
 - .NET SDK 9.0+
 - Node.js 20+
-- Docker (for PostgreSQL)
 - A Google OAuth client ID (for the frontend and backend)
 
 ## Environment Variables
@@ -24,26 +22,16 @@ All configuration is provided via environment variables. Copy `.env.example` and
 - `Auth__JwtSigningKey` — JWT signing key (use a strong secret)
 - `Auth__JwtExpirationMinutes` — JWT lifetime in minutes
 - `Cors__AllowedOrigins` — comma-separated list of allowed frontend origins (e.g., `http://localhost:5173`)
+- `ConnectionStrings__Default` — PostgreSQL connection string for the cloud database
 
 ### Web (`apps/web`)
 - `VITE_API_BASE_URL` — API base URL (e.g., `http://localhost:5143`)
 - `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID
 
-### PostgreSQL (Docker)
-- `POSTGRES_DB`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_PORT`
 
 ## Running Locally
 
-### 1) Start PostgreSQL
-```bash
-cd infra/docker
-docker compose up -d
-```
-
-### 2) Run the API
+### 1) Run the API
 ```bash
 cd apps/api/src/MarinApp.API
 dotnet restore
@@ -51,7 +39,7 @@ dotnet run
 ```
 The API will be available at `http://localhost:5143` (see output for the exact port).
 
-### 3) Run the Web App
+### 2) Run the Web App
 ```bash
 cd apps/web
 npm install
