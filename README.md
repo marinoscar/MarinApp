@@ -15,8 +15,10 @@ MarinApp is a monorepo that hosts a React + TypeScript frontend and an ASP.NET C
 ## Environment Variables
 All configuration is provided via environment variables. Copy `.env.example` and export the values in your shell or via your process manager.
 
+### Shared
+- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID (used by both API and web)
+
 ### API (`apps/api`)
-- `Auth__GoogleClientId` — Google OAuth client ID
 - `Auth__JwtIssuer` — JWT issuer (e.g., `http://localhost:5143`)
 - `Auth__JwtAudience` — JWT audience (e.g., `marinapp-web`)
 - `Auth__JwtSigningKey` — JWT signing key (use a strong secret)
@@ -26,7 +28,6 @@ All configuration is provided via environment variables. Copy `.env.example` and
 
 ### Web (`apps/web`)
 - `VITE_API_BASE_URL` — API base URL (e.g., `http://localhost:5143`)
-- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID
 
 
 ## Running Locally
