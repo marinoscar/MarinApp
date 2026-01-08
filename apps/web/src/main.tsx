@@ -11,9 +11,17 @@ if (!rootElement) {
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
+if (import.meta.env.DEV) {
+  console.debug("VITE_GOOGLE_CLIENT_ID:", googleClientId);
+}
+
+if (!googleClientId) {
+  throw new Error("VITE_GOOGLE_CLIENT_ID is required for Google OAuth");
+}
+
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={googleClientId ?? ""}>
+    <GoogleOAuthProvider clientId={googleClientId}>
       <App />
     </GoogleOAuthProvider>
   </React.StrictMode>
