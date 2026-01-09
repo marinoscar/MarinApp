@@ -63,8 +63,10 @@ public static class Program
         });
 
         builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
+        builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
         builder.Services.AddSingleton<IGoogleTokenValidator, GoogleTokenValidator>();
         builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        builder.Services.AddSingleton<IClipboardStorageService, S3ClipboardStorageService>();
 
         var authOptions = builder.Configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>();
         if (authOptions is null ||
@@ -74,6 +76,14 @@ public static class Program
             string.IsNullOrWhiteSpace(authOptions.JwtSigningKey))
         {
             throw new InvalidOperationException("Auth configuration is missing required values.");
+        }
+
+        var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();
+        if (storageOptions is null ||
+            string.IsNullOrWhiteSpace(storageOptions.S3BucketName) ||
+            string.IsNullOrWhiteSpace(storageOptions.S3Region))
+        {
+            throw new InvalidOperationException("Storage configuration is missing required values.");
         }
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
