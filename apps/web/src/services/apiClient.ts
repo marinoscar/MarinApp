@@ -20,10 +20,17 @@ export class ApiClient {
     });
   }
 
+  async delete(path: string, token?: string): Promise<void> {
+    await this.request<void>(path, {
+      method: "DELETE",
+      token
+    });
+  }
+
   private async request<T>(
     path: string,
     options: {
-      method: "GET" | "POST";
+      method: "GET" | "POST" | "DELETE";
       body?: unknown;
       token?: string;
     }
@@ -47,10 +54,15 @@ export class ApiClient {
       throw new Error(message || "Request failed");
     }
 
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     return (await response.json()) as T;
   }
 }
 
-export const apiClient = new ApiClient(
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:5143"
-);
+export const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:5143";
+
+export const apiClient = new ApiClient(API_BASE_URL);

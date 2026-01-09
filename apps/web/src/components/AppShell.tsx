@@ -6,7 +6,7 @@ import {
   Drawer,
   IconButton,
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   Menu,
   MenuItem,
@@ -29,6 +29,8 @@ interface AppShellProps {
   children: ReactNode;
   themeMode: ThemeMode;
   user?: AppUser | null;
+  activePath: string;
+  onNavigate: (path: string) => void;
   onToggleTheme: () => void;
   onLogout: () => void;
 }
@@ -39,12 +41,19 @@ export const AppShell = ({
   children,
   themeMode,
   user,
+  activePath,
+  onNavigate,
   onToggleTheme,
   onLogout
 }: AppShellProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsAnchor, setSettingsAnchor] = useState<null | HTMLElement>(null);
   const [userAnchor, setUserAnchor] = useState<null | HTMLElement>(null);
+
+  const handleNavigate = (path: string) => {
+    onNavigate(path);
+    setDrawerOpen(false);
+  };
 
   const handleSettingsOpen = (event: React.MouseEvent<HTMLElement>) => {
     setSettingsAnchor(event.currentTarget);
@@ -145,12 +154,28 @@ export const AppShell = ({
         <Toolbar />
         <Box sx={{ overflow: "auto" }}>
           <List>
-            <ListItem>
-              <ListItemText primary="Dashboard" secondary="Coming soon" />
-            </ListItem>
-            <ListItem>
-              <ListItemText primary="Projects" secondary="Coming soon" />
-            </ListItem>
+            <ListItemButton
+              component="a"
+              href="/"
+              selected={activePath === "/"}
+              onClick={(event) => {
+                event.preventDefault();
+                handleNavigate("/");
+              }}
+            >
+              <ListItemText primary="Home" secondary="Overview" />
+            </ListItemButton>
+            <ListItemButton
+              component="a"
+              href="/clipboard"
+              selected={activePath === "/clipboard"}
+              onClick={(event) => {
+                event.preventDefault();
+                handleNavigate("/clipboard");
+              }}
+            >
+              <ListItemText primary="Clipboard" secondary="Global clipboard" />
+            </ListItemButton>
           </List>
         </Box>
       </Drawer>
