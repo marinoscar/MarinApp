@@ -28,7 +28,7 @@ All configuration is provided via environment variables. Copy `.env.example` and
 - `Storage__S3BucketName` — S3 bucket for clipboard entries
 - `Storage__S3Region` — AWS region for the S3 bucket (e.g., `us-east-1`)
 - `Storage__S3Prefix` — optional prefix for clipboard objects (defaults to `clipboard`)
-- Standard AWS credential environment variables such as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` are required when running locally.
+- Standard AWS credential environment variables such as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (if applicable), and `AWS_REGION` are required when running locally.
 
 ### Web (`apps/web`)
 - `VITE_API_BASE_URL` — API base URL (e.g., `http://localhost:5143`)
