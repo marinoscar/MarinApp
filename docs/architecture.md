@@ -50,4 +50,4 @@ Clipboard items are persisted in Amazon S3 per user. For each clipboard item, th
 S3 object metadata includes `user-id`, `item-type`, `created-at`, and optional titles to simplify audit and debugging. The API enforces per-user access to clipboard objects and returns short-lived presigned URLs for previews.
 
 ## Configuration
-Environment variables are used for all secrets and environment-specific values, including the cloud PostgreSQL connection string. The Google OAuth client ID is shared between the API and web via the `VITE_GOOGLE_CLIENT_ID` environment variable. See `README.md` for the full list.
+Environment variables are used for all secrets and environment-specific values, including the cloud PostgreSQL connection string. The Google OAuth client ID is shared between the API and web via the `VITE_GOOGLE_CLIENT_ID` environment variable. S3 storage requires `Storage__S3BucketName`, `Storage__S3Region`, and optional `Storage__S3Prefix`, along with standard AWS credential variables like `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (if applicable), and `AWS_REGION` when running locally. See `README.md` for the full list.
