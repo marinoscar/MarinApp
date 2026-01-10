@@ -78,15 +78,15 @@ public static class Program
             string.IsNullOrWhiteSpace(authOptions.JwtSigningKey))
         {
             throw new InvalidOperationException("Auth configuration is missing required values.");
-        }
+        }   
 
         var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();
 
         if (storageOptions is null)
-            throw new InvalidOperationException("Storage configuration is missing required values.");
+            throw new InvalidOperationException("Storage configuration is missing required values.");   
 
-        storageOptions.S3BucketName = builder.Configuration["AWS_BUCKET_NAME"] ?? throw new InvalidOperationException("");
-        storageOptions.S3Region = builder.Configuration["AWS_REGION"] ?? throw new InvalidOperationException("");
+        storageOptions.S3BucketName = builder.Configuration["AWS_BUCKET_NAME"] ?? throw new InvalidOperationException("AWS_BUCKET_NAME configuration is missing or empty.");
+        storageOptions.S3Region = builder.Configuration["AWS_REGION"] ?? throw new InvalidOperationException("AWS_REGION configuration is missing or empty.");
 
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
