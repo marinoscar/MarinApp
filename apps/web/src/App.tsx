@@ -171,6 +171,60 @@ const App = () => {
     }
   };
 
+  const handlePasteClipboardItem = async () => {
+    if (!token) {
+      return;
+    }
+
+    if (!navigator.clipboard?.read) {
+      setClipboardError("Clipboard read access is not available in this browser.");
+      return;
+    }
+
+    setClipboardLoading(true);
+    setClipboardError(null);
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      let didHandle = false;
+
+      for (const clipboardItem of clipboardItems) {
+        if (clipboardItem.types.includes("text/plain")) {
+          const textBlob = await clipboardItem.getType("text/plain");
+          const clipboardText = await textBlob.text();
+          if (clipboardText.trim()) {
+            await clipboardService.createText(token, {
+              title: textTitle.trim() || undefined,
+              markdownContent: clipboardText
+            });
+            didHandle = true;
+          }
+        }
+
+        for (const type of clipboardItem.types) {
+          if (type.startsWith("text/")) {
+            continue;
+          }
+
+          const blob = await clipboardItem.getType(type);
+          const extension = type.split("/")[1] ?? "bin";
+          const file = new File([blob], `clipboard-${Date.now()}.${extension}`, { type });
+          await clipboardService.uploadFile(token, file, fileUploadTitle.trim() || undefined);
+          didHandle = true;
+        }
+      }
+
+      if (didHandle) {
+        await loadClipboard(token);
+      } else {
+        setClipboardError("Clipboard does not contain supported data.");
+      }
+    } catch (err) {
+      setClipboardError(err instanceof Error ? err.message : "Failed to read clipboard");
+    } finally {
+      setClipboardLoading(false);
+    }
+  };
+
   const handlePasteText = async (text: string) => {
     if (!token || !text.trim()) {
       return;
@@ -257,6 +311,7 @@ const App = () => {
                   onFileTitleChange={setFileUploadTitle}
                   onSaveText={handleSaveText}
                   onPasteFromClipboard={handlePasteFromClipboard}
+                  onPasteClipboardItem={handlePasteClipboardItem}
                   onFilesSelected={handleFileUpload}
                   onPasteText={handlePasteText}
                   onDeleteItem={handleDeleteItem}
