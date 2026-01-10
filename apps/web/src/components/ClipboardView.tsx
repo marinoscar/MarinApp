@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import AddIcon from "@mui/icons-material/Add";
+import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -39,6 +40,7 @@ interface ClipboardViewProps {
   onFileTitleChange: (value: string) => void;
   onSaveText: () => void;
   onPasteFromClipboard: () => void;
+  onPasteClipboardItem: () => void;
   onFilesSelected: (files: File[]) => void;
   onPasteText: (text: string) => void;
   onDeleteItem: (itemId: string) => void;
@@ -56,6 +58,7 @@ export const ClipboardView = ({
   onFileTitleChange,
   onSaveText,
   onPasteFromClipboard,
+  onPasteClipboardItem,
   onFilesSelected,
   onPasteText,
   onDeleteItem
@@ -276,7 +279,7 @@ export const ClipboardView = ({
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" justifyContent="flex-start">
+      <Stack direction="row" spacing={2} justifyContent="flex-start">
         <Fab
           color="primary"
           aria-label="Add to clipboard"
@@ -284,6 +287,19 @@ export const ClipboardView = ({
         >
           <AddIcon />
         </Fab>
+        <Tooltip title="Paste from device">
+          <span>
+            <Fab
+              color="secondary"
+              aria-label="Paste from device"
+              onClick={onPasteClipboardItem}
+              disabled={loading}
+              size="small"
+            >
+              <ContentPasteIcon />
+            </Fab>
+          </span>
+        </Tooltip>
       </Stack>
 
       <Collapse in={isAddOpen} unmountOnExit>
