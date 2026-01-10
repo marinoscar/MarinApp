@@ -37,6 +37,8 @@ public sealed class S3ClipboardStorageService : IClipboardStorageService
     /// <inheritdoc />
     public async Task<IReadOnlyCollection<ClipboardItemDto>> ListAsync(string userId, CancellationToken cancellationToken)
     {
+        await EnsureBucketExistsAsync(cancellationToken);
+
         var prefix = GetUserPrefix(userId);
         var items = new List<ClipboardItemDto>();
         string? continuationToken = null;
@@ -91,6 +93,26 @@ public sealed class S3ClipboardStorageService : IClipboardStorageService
         } while (!string.IsNullOrWhiteSpace(continuationToken));
 
         return items.OrderByDescending(item => item.CreatedAt).ToArray();
+    }
+
+    private async Task EnsureBucketExistsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await _s3Client.ListBucketsAsync(cancellationToken);
+            if (!response.Buckets.Any(b => b.BucketName == _options.S3BucketName))
+            {
+                await _s3Client.PutBucketAsync(new PutBucketRequest
+                {
+                    BucketName = _options.S3BucketName,
+                    UseClientRegion = true
+                }, cancellationToken);
+            }
+        }
+        catch (AmazonS3Exception ex) when (ex.ErrorCode == "BucketAlreadyOwnedByYou")
+        {
+            // Bucket already exists and is owned by the user, no action needed.
+        }
     }
 
     /// <inheritdoc />
