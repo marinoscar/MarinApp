@@ -171,6 +171,26 @@ const App = () => {
     }
   };
 
+  const handlePasteText = async (text: string) => {
+    if (!token || !text.trim()) {
+      return;
+    }
+
+    setClipboardLoading(true);
+    setClipboardError(null);
+    try {
+      await clipboardService.createText(token, {
+        title: textTitle.trim() || undefined,
+        markdownContent: text
+      });
+      await loadClipboard(token);
+    } catch (err) {
+      setClipboardError(err instanceof Error ? err.message : "Failed to save text");
+    } finally {
+      setClipboardLoading(false);
+    }
+  };
+
   const handleFileUpload = async (files: File[]) => {
     if (!token || files.length === 0) {
       return;
@@ -238,6 +258,7 @@ const App = () => {
                   onSaveText={handleSaveText}
                   onPasteFromClipboard={handlePasteFromClipboard}
                   onFilesSelected={handleFileUpload}
+                  onPasteText={handlePasteText}
                   onDeleteItem={handleDeleteItem}
                 />
               ) : (
