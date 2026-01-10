@@ -40,6 +40,7 @@ interface ClipboardViewProps {
   onSaveText: () => void;
   onPasteFromClipboard: () => void;
   onFilesSelected: (files: File[]) => void;
+  onPasteText: (text: string) => void;
   onDeleteItem: (itemId: string) => void;
 }
 
@@ -56,6 +57,7 @@ export const ClipboardView = ({
   onSaveText,
   onPasteFromClipboard,
   onFilesSelected,
+  onPasteText,
   onDeleteItem
 }: ClipboardViewProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -83,12 +85,27 @@ export const ClipboardView = ({
   };
 
   const handlePasteFiles = (event: ClipboardEvent<HTMLDivElement>) => {
-    const clipboardFiles = event.clipboardData?.files;
-    if (!clipboardFiles || clipboardFiles.length === 0) {
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) {
       return;
     }
+
+    const clipboardFiles = clipboardData.files;
+    const clipboardText = clipboardData.getData("text/plain");
+    const hasFiles = clipboardFiles && clipboardFiles.length > 0;
+    const hasText = Boolean(clipboardText?.trim());
+
+    if (!hasFiles && !hasText) {
+      return;
+    }
+
     event.preventDefault();
-    handleFilesAdded(clipboardFiles);
+    if (hasFiles) {
+      handleFilesAdded(clipboardFiles);
+    }
+    if (hasText) {
+      onPasteText(clipboardText);
+    }
   };
 
   const handleDropFiles = (event: DragEvent<HTMLDivElement>) => {
@@ -360,7 +377,7 @@ export const ClipboardView = ({
 
       <Card>
         <CardHeader title="Your clipboard" subheader="Newest items appear first." />
-        <CardContent>
+        <CardContent onPaste={handlePasteFiles} tabIndex={0}>
           {error && <Alert severity="error">{error}</Alert>}
           {loading && (
             <Box display="flex" justifyContent="center" py={2}>
