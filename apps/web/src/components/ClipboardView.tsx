@@ -72,6 +72,23 @@ export const ClipboardView = ({
     await navigator.clipboard.writeText(text);
   };
 
+  const handleDownload = (item: ClipboardItem) => {
+    if (!item.previewUrl) {
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = item.previewUrl;
+    if (item.fileName) {
+      link.download = item.fileName;
+    }
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const isMediaItem = (item: ClipboardItem) =>
     item.itemType !== "text" &&
     (item.contentType?.startsWith("image/") || item.contentType?.startsWith("video/"));
@@ -120,54 +137,63 @@ export const ClipboardView = ({
   const renderItemCard = (item: ClipboardItem) => (
     <Grid item xs={12} sm={6} md={4} key={item.id}>
       <Card variant="outlined" sx={{ height: "100%" }}>
-        <CardHeader
-          title={item.title || item.fileName || "Clipboard item"}
-          subheader={new Date(item.createdAt).toLocaleString()}
-          action={
-            <Stack direction="row" spacing={1} alignItems="center">
-              {renderItemTypeIcon(item)}
-              {item.itemType === "text" ? (
-                <Tooltip title="Copy to clipboard">
+        <CardContent>
+          <Stack spacing={1.5}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack direction="row" spacing={1} alignItems="center">
+                {renderItemTypeIcon(item)}
+              </Stack>
+              <Stack direction="row" spacing={1} alignItems="center">
+                {item.itemType === "text" ? (
+                  <Tooltip title="Copy to clipboard">
+                    <span>
+                      <IconButton
+                        aria-label="Copy to clipboard"
+                        onClick={() => void handleCopyToClipboard(item.markdownContent)}
+                        disabled={loading}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Download">
+                    <span>
+                      <IconButton
+                        aria-label="Download"
+                        onClick={() => handleDownload(item)}
+                        disabled={loading || !item.previewUrl}
+                      >
+                        <DownloadIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                <Tooltip title="Delete">
                   <span>
                     <IconButton
-                      aria-label="Copy to clipboard"
-                      onClick={() => void handleCopyToClipboard(item.markdownContent)}
+                      aria-label="Delete"
+                      onClick={() => onDeleteItem(item.id)}
                       disabled={loading}
                     >
-                      <ContentCopyIcon />
+                      <DeleteIcon />
                     </IconButton>
                   </span>
                 </Tooltip>
-              ) : (
-                <Tooltip title="Download">
-                  <span>
-                    <IconButton
-                      aria-label="Download"
-                      component="a"
-                      href={item.previewUrl ?? undefined}
-                      download={item.fileName ?? undefined}
-                      disabled={loading || !item.previewUrl}
-                    >
-                      <DownloadIcon />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              )}
-              <Tooltip title="Delete">
-                <span>
-                  <IconButton
-                    aria-label="Delete"
-                    onClick={() => onDeleteItem(item.id)}
-                    disabled={loading}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              </Stack>
             </Stack>
-          }
-        />
-        <CardContent sx={{ pt: 0 }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600}>
+                {item.title || item.fileName || "Clipboard item"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {new Date(item.createdAt).toLocaleString()}
+              </Typography>
+            </Box>
+          </Stack>
+        </CardContent>
+        <Divider />
+        <CardContent>
           <Stack spacing={1}>
             {item.itemType === "text" && (
               <Typography variant="body2" color="text.secondary">
