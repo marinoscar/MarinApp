@@ -50,7 +50,8 @@ mkdir -p /var/www/marin2api
 
 ```bash
 cd /var/www/marin2web
-git clone https://github.com/marinoscar/MarinApp .
+git clone --filter=blob:none --sparse https://github.com/marinoscar/MarinApp .
+git sparse-checkout set apps/web
 ```
 
 > Repository URL: https://github.com/marinoscar/MarinApp
@@ -85,8 +86,8 @@ services:
   marin-web:
     image: marin-web:latest
     build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+      context: apps/web
+      dockerfile: Dockerfile
     container_name: marin-web
     restart: unless-stopped
     env_file:
@@ -188,7 +189,8 @@ certbot renew --dry-run
 
 ```bash
 cd /var/www/marin2api
-git clone https://github.com/marinoscar/MarinApp .
+git clone --filter=blob:none --sparse https://github.com/marinoscar/MarinApp .
+git sparse-checkout set apps/api
 ```
 
 > Repository URL: https://github.com/marinoscar/MarinApp
@@ -237,8 +239,8 @@ services:
   marin-api:
     image: marin-api:latest
     build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+      context: apps/api
+      dockerfile: Dockerfile
     container_name: marin-api
     restart: unless-stopped
     env_file:
