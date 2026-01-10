@@ -89,18 +89,12 @@ export const ClipboardView = ({
     document.body.removeChild(link);
   };
 
-  const isMediaItem = (item: ClipboardItem) =>
-    item.itemType !== "text" &&
-    (item.contentType?.startsWith("image/") || item.contentType?.startsWith("video/"));
-
   const isImageItem = (item: ClipboardItem) => item.contentType?.startsWith("image/");
   const isVideoItem = (item: ClipboardItem) => item.contentType?.startsWith("video/");
 
-  const mediaItems = items.filter((item) => isMediaItem(item));
-  const fileItems = items.filter(
-    (item) => item.itemType !== "text" && !isMediaItem(item)
+  const sortedItems = [...items].sort(
+    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
-  const textItems = items.filter((item) => item.itemType === "text");
 
   const renderItemTypeIcon = (item: ClipboardItem) => {
     if (item.itemType === "text") {
@@ -312,44 +306,9 @@ export const ClipboardView = ({
           )}
           {!loading && items.length === 0 && <Alert severity="info">No clipboard items yet.</Alert>}
           {!loading && items.length > 0 && (
-            <Stack spacing={3}>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Media
-                </Typography>
-                {mediaItems.length === 0 ? (
-                  <Alert severity="info">No media items yet.</Alert>
-                ) : (
-                  <Grid container spacing={2}>
-                    {mediaItems.map((item) => renderItemCard(item))}
-                  </Grid>
-                )}
-              </Box>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Files
-                </Typography>
-                {fileItems.length === 0 ? (
-                  <Alert severity="info">No files yet.</Alert>
-                ) : (
-                  <Grid container spacing={2}>
-                    {fileItems.map((item) => renderItemCard(item))}
-                  </Grid>
-                )}
-              </Box>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Text
-                </Typography>
-                {textItems.length === 0 ? (
-                  <Alert severity="info">No text items yet.</Alert>
-                ) : (
-                  <Grid container spacing={2}>
-                    {textItems.map((item) => renderItemCard(item))}
-                  </Grid>
-                )}
-              </Box>
-            </Stack>
+            <Grid container spacing={2}>
+              {sortedItems.map((item) => renderItemCard(item))}
+            </Grid>
           )}
         </CardContent>
       </Card>
