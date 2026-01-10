@@ -40,6 +40,10 @@ mkdir -p marin2web
 mkdir -p marin2api
 ```
 
+> **Dockerfile locations (repo root):**
+> - Web: `apps/web/Dockerfile`
+> - API: `apps/api/Dockerfile`
+
 ---
 
 # Web App Deployment (`https://app.marin.cr`)
