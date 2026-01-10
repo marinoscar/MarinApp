@@ -4,10 +4,8 @@ import {
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
   CardHeader,
-  Chip,
   CircularProgress,
   Collapse,
   Divider,
@@ -16,11 +14,17 @@ import {
   IconButton,
   Stack,
   TextField,
+  Tooltip,
   Typography
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DownloadIcon from "@mui/icons-material/Download";
+import DescriptionIcon from "@mui/icons-material/Description";
+import TextSnippetIcon from "@mui/icons-material/TextSnippet";
+import ImageIcon from "@mui/icons-material/Image";
+import VideocamIcon from "@mui/icons-material/Videocam";
 import { ClipboardItem } from "../services/clipboardService";
 
 interface ClipboardViewProps {
@@ -55,6 +59,146 @@ export const ClipboardView = ({
   onDeleteItem
 }: ClipboardViewProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
+
+  const handleCopyToClipboard = async (text?: string | null) => {
+    if (!text) {
+      return;
+    }
+
+    if (!navigator.clipboard?.writeText) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(text);
+  };
+
+  const isMediaItem = (item: ClipboardItem) =>
+    item.itemType !== "text" &&
+    (item.contentType?.startsWith("image/") || item.contentType?.startsWith("video/"));
+
+  const isImageItem = (item: ClipboardItem) => item.contentType?.startsWith("image/");
+  const isVideoItem = (item: ClipboardItem) => item.contentType?.startsWith("video/");
+
+  const mediaItems = items.filter((item) => isMediaItem(item));
+  const fileItems = items.filter(
+    (item) => item.itemType !== "text" && !isMediaItem(item)
+  );
+  const textItems = items.filter((item) => item.itemType === "text");
+
+  const renderItemTypeIcon = (item: ClipboardItem) => {
+    if (item.itemType === "text") {
+      return (
+        <Tooltip title="Text">
+          <TextSnippetIcon fontSize="small" color="action" />
+        </Tooltip>
+      );
+    }
+
+    if (isImageItem(item)) {
+      return (
+        <Tooltip title="Image">
+          <ImageIcon fontSize="small" color="action" />
+        </Tooltip>
+      );
+    }
+
+    if (isVideoItem(item)) {
+      return (
+        <Tooltip title="Video">
+          <VideocamIcon fontSize="small" color="action" />
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Tooltip title="File">
+        <DescriptionIcon fontSize="small" color="action" />
+      </Tooltip>
+    );
+  };
+
+  const renderItemCard = (item: ClipboardItem) => (
+    <Grid item xs={12} sm={6} md={4} key={item.id}>
+      <Card variant="outlined" sx={{ height: "100%" }}>
+        <CardHeader
+          title={item.title || item.fileName || "Clipboard item"}
+          subheader={new Date(item.createdAt).toLocaleString()}
+          action={
+            <Stack direction="row" spacing={1} alignItems="center">
+              {renderItemTypeIcon(item)}
+              {item.itemType === "text" ? (
+                <Tooltip title="Copy to clipboard">
+                  <span>
+                    <IconButton
+                      aria-label="Copy to clipboard"
+                      onClick={() => void handleCopyToClipboard(item.markdownContent)}
+                      disabled={loading}
+                    >
+                      <ContentCopyIcon />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Download">
+                  <span>
+                    <IconButton
+                      aria-label="Download"
+                      component="a"
+                      href={item.previewUrl ?? undefined}
+                      download={item.fileName ?? undefined}
+                      disabled={loading || !item.previewUrl}
+                    >
+                      <DownloadIcon />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
+              <Tooltip title="Delete">
+                <span>
+                  <IconButton
+                    aria-label="Delete"
+                    onClick={() => onDeleteItem(item.id)}
+                    disabled={loading}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Stack>
+          }
+        />
+        <CardContent sx={{ pt: 0 }}>
+          <Stack spacing={1}>
+            {item.itemType === "text" && (
+              <Typography variant="body2" color="text.secondary">
+                {item.markdownContent?.slice(0, 140) || "Markdown content"}
+              </Typography>
+            )}
+            {item.itemType !== "text" && (
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  {item.fileName}
+                </Typography>
+                {item.contentType?.startsWith("image/") && item.previewUrl && (
+                  <Box
+                    component="img"
+                    src={item.previewUrl}
+                    alt={item.fileName ?? "Clipboard image"}
+                    sx={{ width: "100%", borderRadius: 1, objectFit: "cover" }}
+                  />
+                )}
+                {item.fileSizeBytes && (
+                  <Typography variant="caption" color="text.secondary">
+                    {(item.fileSizeBytes / 1024).toFixed(1)} KB
+                  </Typography>
+                )}
+              </Stack>
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
 
   return (
     <Stack spacing={3}>
@@ -142,57 +286,44 @@ export const ClipboardView = ({
           )}
           {!loading && items.length === 0 && <Alert severity="info">No clipboard items yet.</Alert>}
           {!loading && items.length > 0 && (
-            <Grid container spacing={2}>
-              {items.map((item) => (
-                <Grid item xs={12} sm={6} md={4} key={item.id}>
-                  <Card variant="outlined" sx={{ height: "100%" }}>
-                    <CardHeader
-                      title={item.title || item.fileName || "Clipboard item"}
-                      subheader={new Date(item.createdAt).toLocaleString()}
-                    />
-                    <CardContent sx={{ pt: 0 }}>
-                      <Stack spacing={1}>
-                        <Chip size="small" label={item.itemType === "text" ? "Text" : "File"} />
-                        {item.itemType === "text" && (
-                          <Typography variant="body2" color="text.secondary">
-                            {item.markdownContent?.slice(0, 140) || "Markdown content"}
-                          </Typography>
-                        )}
-                        {item.itemType !== "text" && (
-                          <Stack spacing={1}>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.fileName}
-                            </Typography>
-                            {item.contentType?.startsWith("image/") && item.previewUrl && (
-                              <Box
-                                component="img"
-                                src={item.previewUrl}
-                                alt={item.fileName ?? "Clipboard image"}
-                                sx={{ width: "100%", borderRadius: 1, objectFit: "cover" }}
-                              />
-                            )}
-                            {item.fileSizeBytes && (
-                              <Typography variant="caption" color="text.secondary">
-                                {(item.fileSizeBytes / 1024).toFixed(1)} KB
-                              </Typography>
-                            )}
-                          </Stack>
-                        )}
-                      </Stack>
-                    </CardContent>
-                    <CardActions sx={{ justifyContent: "flex-end" }}>
-                      <IconButton
-                        aria-label="Delete"
-                        onClick={() => onDeleteItem(item.id)}
-                        disabled={loading}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+            <Stack spacing={3}>
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Media
+                </Typography>
+                {mediaItems.length === 0 ? (
+                  <Alert severity="info">No media items yet.</Alert>
+                ) : (
+                  <Grid container spacing={2}>
+                    {mediaItems.map((item) => renderItemCard(item))}
+                  </Grid>
+                )}
+              </Box>
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Files
+                </Typography>
+                {fileItems.length === 0 ? (
+                  <Alert severity="info">No files yet.</Alert>
+                ) : (
+                  <Grid container spacing={2}>
+                    {fileItems.map((item) => renderItemCard(item))}
+                  </Grid>
+                )}
+              </Box>
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Text
+                </Typography>
+                {textItems.length === 0 ? (
+                  <Alert severity="info">No text items yet.</Alert>
+                ) : (
+                  <Grid container spacing={2}>
+                    {textItems.map((item) => renderItemCard(item))}
+                  </Grid>
+                )}
+              </Box>
+            </Stack>
           )}
         </CardContent>
       </Card>
