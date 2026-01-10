@@ -29,6 +29,8 @@ public static class Program
             builder.Configuration["Auth:GoogleClientId"] = sharedGoogleClientId;
         }
 
+
+
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -79,12 +81,13 @@ public static class Program
         }
 
         var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();
-        if (storageOptions is null ||
-            string.IsNullOrWhiteSpace(storageOptions.S3BucketName) ||
-            string.IsNullOrWhiteSpace(storageOptions.S3Region))
-        {
+
+        if (storageOptions is null)
             throw new InvalidOperationException("Storage configuration is missing required values.");
-        }
+
+        storageOptions.S3BucketName = builder.Configuration["AWS_BUCKET_NAME"] ?? throw new InvalidOperationException("");
+        storageOptions.S3Region = builder.Configuration["AWS_REGION"] ?? throw new InvalidOperationException("");
+
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
