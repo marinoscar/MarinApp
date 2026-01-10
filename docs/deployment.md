@@ -50,10 +50,10 @@ mkdir -p /var/www/marin2api
 
 ```bash
 cd /var/www/marin2web
-git clone <YOUR_GIT_REPO_URL> .
+git clone https://github.com/marinoscar/MarinApp .
 ```
 
-> Replace `<YOUR_GIT_REPO_URL>` with your actual repository URL.
+> Repository URL: https://github.com/marinoscar/MarinApp
 
 ### Step 2: Create environment files
 
@@ -188,10 +188,10 @@ certbot renew --dry-run
 
 ```bash
 cd /var/www/marin2api
-git clone <YOUR_GIT_REPO_URL> .
+git clone https://github.com/marinoscar/MarinApp .
 ```
 
-> You can reuse the same repo URL as the web app if it’s a monorepo.
+> Repository URL: https://github.com/marinoscar/MarinApp
 
 ### Step 2: Create environment files
 
