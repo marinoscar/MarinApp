@@ -294,7 +294,6 @@ export const ClipboardView = ({
               aria-label="Paste from device"
               onClick={onPasteClipboardItem}
               disabled={loading}
-              size="small"
             >
               <ContentPasteIcon />
             </Fab>
