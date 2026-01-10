@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Alert,
   Box,
@@ -8,7 +9,9 @@ import {
   CardHeader,
   Chip,
   CircularProgress,
+  Collapse,
   Divider,
+  Fab,
   Grid,
   IconButton,
   Stack,
@@ -16,6 +19,7 @@ import {
   Typography
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ClipboardItem } from "../services/clipboardService";
 
@@ -50,64 +54,82 @@ export const ClipboardView = ({
   onFileSelected,
   onDeleteItem
 }: ClipboardViewProps) => {
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
   return (
     <Stack spacing={3}>
-      <Card>
-        <CardHeader title="Add to clipboard" subheader="Markdown text, images, and files." />
-        <CardContent>
-          <Stack spacing={2}>
-            <TextField
-              label="Title (optional)"
-              value={textTitle}
-              onChange={(event) => onTextTitleChange(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Markdown text"
-              value={textMarkdown}
-              onChange={(event) => onTextMarkdownChange(event.target.value)}
-              multiline
-              minRows={4}
-              fullWidth
-            />
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button
-                variant="contained"
-                onClick={onSaveText}
-                disabled={loading || !textMarkdown.trim()}
-              >
-                Save text
-              </Button>
-              <Button variant="outlined" startIcon={<ContentCopyIcon />} onClick={onPasteFromClipboard}>
-                Paste from device
+      <Stack direction="row" justifyContent="flex-start">
+        <Fab
+          color="primary"
+          aria-label="Add to clipboard"
+          onClick={() => setIsAddOpen((previous) => !previous)}
+        >
+          <AddIcon />
+        </Fab>
+      </Stack>
+
+      <Collapse in={isAddOpen} unmountOnExit>
+        <Card>
+          <CardHeader title="Add to clipboard" subheader="Markdown text, images, and files." />
+          <CardContent>
+            <Stack spacing={2}>
+              <TextField
+                label="Title (optional)"
+                value={textTitle}
+                onChange={(event) => onTextTitleChange(event.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Markdown text"
+                value={textMarkdown}
+                onChange={(event) => onTextMarkdownChange(event.target.value)}
+                multiline
+                minRows={4}
+                fullWidth
+              />
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="contained"
+                  onClick={onSaveText}
+                  disabled={loading || !textMarkdown.trim()}
+                >
+                  Save text
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<ContentCopyIcon />}
+                  onClick={onPasteFromClipboard}
+                >
+                  Paste from device
+                </Button>
+              </Stack>
+            </Stack>
+          </CardContent>
+          <Divider />
+          <CardContent>
+            <Stack spacing={2}>
+              <TextField
+                label="File title (optional)"
+                value={fileTitle}
+                onChange={(event) => onFileTitleChange(event.target.value)}
+                fullWidth
+              />
+              <Button variant="outlined" component="label">
+                Upload file or image
+                <input
+                  type="file"
+                  hidden
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    event.target.value = "";
+                    onFileSelected(file);
+                  }}
+                />
               </Button>
             </Stack>
-          </Stack>
-        </CardContent>
-        <Divider />
-        <CardContent>
-          <Stack spacing={2}>
-            <TextField
-              label="File title (optional)"
-              value={fileTitle}
-              onChange={(event) => onFileTitleChange(event.target.value)}
-              fullWidth
-            />
-            <Button variant="outlined" component="label">
-              Upload file or image
-              <input
-                type="file"
-                hidden
-                onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
-                  event.target.value = "";
-                  onFileSelected(file);
-                }}
-              />
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Collapse>
 
       <Card>
         <CardHeader title="Your clipboard" subheader="Newest items appear first." />
