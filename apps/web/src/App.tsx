@@ -171,15 +171,17 @@ const App = () => {
     }
   };
 
-  const handleFileUpload = async (file: File | null) => {
-    if (!token || !file) {
+  const handleFileUpload = async (files: File[]) => {
+    if (!token || files.length === 0) {
       return;
     }
 
     setClipboardLoading(true);
     setClipboardError(null);
     try {
-      await clipboardService.uploadFile(token, file, fileUploadTitle.trim() || undefined);
+      for (const file of files) {
+        await clipboardService.uploadFile(token, file, fileUploadTitle.trim() || undefined);
+      }
       setFileUploadTitle("");
       await loadClipboard(token);
     } catch (err) {
@@ -235,7 +237,7 @@ const App = () => {
                   onFileTitleChange={setFileUploadTitle}
                   onSaveText={handleSaveText}
                   onPasteFromClipboard={handlePasteFromClipboard}
-                  onFileSelected={handleFileUpload}
+                  onFilesSelected={handleFileUpload}
                   onDeleteItem={handleDeleteItem}
                 />
               ) : (

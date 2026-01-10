@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ClipboardEvent, DragEvent, useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -39,7 +39,7 @@ interface ClipboardViewProps {
   onFileTitleChange: (value: string) => void;
   onSaveText: () => void;
   onPasteFromClipboard: () => void;
-  onFileSelected: (file: File | null) => void;
+  onFilesSelected: (files: File[]) => void;
   onDeleteItem: (itemId: string) => void;
 }
 
@@ -55,10 +55,47 @@ export const ClipboardView = ({
   onFileTitleChange,
   onSaveText,
   onPasteFromClipboard,
-  onFileSelected,
+  onFilesSelected,
   onDeleteItem
 }: ClipboardViewProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  const dropZoneStyles = useMemo(
+    () => ({
+      border: "2px dashed",
+      borderColor: isDragActive ? "primary.main" : "divider",
+      borderRadius: 2,
+      padding: 3,
+      textAlign: "center",
+      cursor: "pointer",
+      backgroundColor: isDragActive ? "rgba(25, 118, 210, 0.08)" : "background.default",
+      transition: "border-color 0.2s ease, background-color 0.2s ease"
+    }),
+    [isDragActive]
+  );
+
+  const handleFilesAdded = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) {
+      return;
+    }
+    onFilesSelected(Array.from(fileList));
+  };
+
+  const handlePasteFiles = (event: ClipboardEvent<HTMLDivElement>) => {
+    const clipboardFiles = event.clipboardData?.files;
+    if (!clipboardFiles || clipboardFiles.length === 0) {
+      return;
+    }
+    event.preventDefault();
+    handleFilesAdded(clipboardFiles);
+  };
+
+  const handleDropFiles = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragActive(false);
+    handleFilesAdded(event.dataTransfer?.files ?? null);
+  };
 
   const handleCopyToClipboard = async (text?: string | null) => {
     if (!text) {
@@ -278,18 +315,44 @@ export const ClipboardView = ({
                 onChange={(event) => onFileTitleChange(event.target.value)}
                 fullWidth
               />
-              <Button variant="outlined" component="label">
-                Upload file or image
+              <Box
+                component="label"
+                sx={dropZoneStyles}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  setIsDragActive(true);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setIsDragActive(true);
+                }}
+                onDragLeave={() => setIsDragActive(false)}
+                onDrop={handleDropFiles}
+                onPaste={handlePasteFiles}
+                tabIndex={0}
+              >
+                <Stack spacing={1.5} alignItems="center">
+                  <AddIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Drag files to upload
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Drop files here, click to browse, or paste from your clipboard.
+                  </Typography>
+                  <Button variant="contained" component="span">
+                    Choose files
+                  </Button>
+                </Stack>
                 <input
                   type="file"
                   hidden
+                  multiple
                   onChange={(event) => {
-                    const file = event.target.files?.[0] ?? null;
+                    handleFilesAdded(event.target.files ?? null);
                     event.target.value = "";
-                    onFileSelected(file);
                   }}
                 />
-              </Button>
+              </Box>
             </Stack>
           </CardContent>
         </Card>
