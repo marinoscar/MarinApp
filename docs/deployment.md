@@ -36,8 +36,8 @@ These steps ensure Docker and the Compose plugin are available. You already have
 We will place each app in its own directory under `/var/www`.
 
 ```bash
-mkdir -p /var/www/marin2web
-mkdir -p /var/www/marin2api
+mkdir -p marin2web
+mkdir -p marin2api
 ```
 
 ---
@@ -49,7 +49,7 @@ mkdir -p /var/www/marin2api
 ### Step 1: Clone the repository
 
 ```bash
-cd /var/www/marin2web
+cd marin2web
 git clone --filter=blob:none --sparse https://github.com/marinoscar/MarinApp .
 git sparse-checkout set apps/web
 ```
@@ -61,7 +61,7 @@ git sparse-checkout set apps/web
 Create a **runtime** env file for the web app (example file name: `.env.web`). Use `nano` as your editor:
 
 ```bash
-nano /var/www/marin2web/.env.web
+nano marin2web/apps/web/.env.web
 ```
 
 Then paste:
@@ -76,7 +76,7 @@ VITE_API_BASE_URL=https://api2.marin.cr
 ### Step 3: Create a Docker Compose file for the web app
 
 ```bash
-nano /var/www/marin2web/docker-compose.yml
+nano marin2web/apps/web/docker-compose.yml
 ```
 
 Then paste:
@@ -86,14 +86,13 @@ services:
   marin-web:
     image: marin-web:latest
     build:
-      context: apps/web
       dockerfile: Dockerfile
     container_name: marin-web
     restart: unless-stopped
     env_file:
       - .env.web
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3021:3021"
 ```
 
 > If your web container listens on a different port, adjust `3000` accordingly.
