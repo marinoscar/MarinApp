@@ -75,7 +75,11 @@ export const ClipboardView = ({
       textAlign: "center",
       cursor: "pointer",
       backgroundColor: isDragActive ? "rgba(25, 118, 210, 0.08)" : "background.default",
-      transition: "border-color 0.2s ease, background-color 0.2s ease"
+      transition: "border-color 0.2s ease, background-color 0.2s ease",
+      "& label": {
+        display: "block",
+        cursor: "inherit"
+      }
     }),
     [isDragActive]
   );
@@ -348,7 +352,6 @@ export const ClipboardView = ({
                 fullWidth
               />
               <Box
-                component="label"
                 sx={dropZoneStyles}
                 onDragEnter={(event) => {
                   event.preventDefault();
@@ -363,19 +366,22 @@ export const ClipboardView = ({
                 onPaste={handlePasteFiles}
                 tabIndex={0}
               >
-                <Stack spacing={1.5} alignItems="center">
-                  <AddIcon color="primary" />
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Drag files to upload
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Drop files here, click to browse, or paste from your clipboard.
-                  </Typography>
-                  <Button variant="contained" component="span">
-                    Choose files
-                  </Button>
-                </Stack>
+                <label htmlFor="clipboard-upload">
+                  <Stack spacing={1.5} alignItems="center">
+                    <AddIcon color="primary" />
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      Drag files to upload
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Drop files here, click to browse, or paste from your clipboard.
+                    </Typography>
+                    <Button variant="contained" component="span">
+                      Choose files
+                    </Button>
+                  </Stack>
+                </label>
                 <input
+                  id="clipboard-upload"
                   type="file"
                   hidden
                   multiple
