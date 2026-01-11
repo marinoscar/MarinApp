@@ -1,9 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 WORKDIR /src
-COPY apps/api/src/MarinApp.API.sln ./MarinApp.API.sln
 COPY apps/api/src/MarinApp.API.csproj ./MarinApp.API.csproj
-RUN dotnet restore ./MarinApp.API.sln
+RUN dotnet restore ./MarinApp.API.csproj
 
 COPY apps/api/src/ ./
 RUN dotnet publish ./MarinApp.API.csproj -c Release -o /app/publish
