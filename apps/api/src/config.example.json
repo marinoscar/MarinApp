@@ -1,0 +1,16 @@
+{
+  "Auth": {
+    "GoogleClientId": "your-google-client-id.apps.googleusercontent.com",
+    "JwtIssuer": "http://localhost:5143",
+    "JwtAudience": "marinapp-web",
+    "JwtExpirationMinutes": 60
+  },
+  "Cors": {
+    "AllowedOrigins": [
+      "http://localhost:5174"
+    ]
+  },
+  "Storage": {
+    "S3Prefix": "clipboard"
+  }
+}

@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App";
+import { loadAppConfig } from "./config";
+import { setApiBaseUrl } from "./services/apiClient";
 
 const rootElement = document.getElementById("root");
 
@@ -9,20 +11,20 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+const bootstrap = async (): Promise<void> => {
+  const config = await loadAppConfig();
 
-if (import.meta.env.DEV) {
-  console.debug("VITE_GOOGLE_CLIENT_ID:", googleClientId);
-}
+  setApiBaseUrl(config.apiBaseUrl);
 
-if (!googleClientId) {
-  throw new Error("VITE_GOOGLE_CLIENT_ID is required for Google OAuth");
-}
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <GoogleOAuthProvider clientId={config.googleClientId}>
+        <App />
+      </GoogleOAuthProvider>
+    </React.StrictMode>
+  );
+};
 
-ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <GoogleOAuthProvider clientId={googleClientId}>
-      <App />
-    </GoogleOAuthProvider>
-  </React.StrictMode>
-);
+bootstrap().catch((error) => {
+  console.error("Failed to start the app:", error);
+});

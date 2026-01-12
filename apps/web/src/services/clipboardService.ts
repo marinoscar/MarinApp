@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiClient } from "./apiClient";
+import { apiClient, getApiBaseUrl } from "./apiClient";
 
 export interface ClipboardItem {
   id: string;
@@ -45,7 +45,7 @@ export const clipboardService = {
       formData.append("title", title);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/clipboard/files`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/clipboard/files`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`

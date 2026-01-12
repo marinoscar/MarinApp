@@ -1,7 +1,7 @@
 namespace MarinApp.API.Options;
 
 /// <summary>
-/// Authentication configuration options loaded from environment variables.
+/// Authentication configuration options for the API.
 /// </summary>
 public class AuthOptions
 {

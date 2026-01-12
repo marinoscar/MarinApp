@@ -12,26 +12,25 @@ MarinApp is a monorepo that hosts a React + TypeScript frontend and an ASP.NET C
 - Node.js 20+
 - A Google OAuth client ID (for the frontend and backend)
 
-## Environment Variables
-All configuration is provided via environment variables. Copy `.env.example` and export the values in your shell or via your process manager.
+## Configuration
+Copy the versioned example JSON files to their runtime counterparts:
 
-### Shared
-- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID (used by both API and web)
+- `apps/api/src/config.example.json` → `apps/api/src/config.json`
+- `apps/web/public/config.example.json` → `apps/web/public/config.json`
 
-### API (`apps/api`)
-- `Auth__JwtIssuer` — JWT issuer (e.g., `http://localhost:5143`)
-- `Auth__JwtAudience` — JWT audience (e.g., `marinapp-web`)
+The web app can also load config from `apps/web/public/config.js` if you prefer runtime injection without an extra fetch:
+
+- `apps/web/public/config.example.js` → `apps/web/public/config.js`
+
+These config files hold non-secret configuration such as Google OAuth client IDs, CORS origins, and base URLs.
+
+### Environment Variables (secrets + AWS)
+Copy `apps/web/.env.example` and export the values in your shell or via your process manager.
+
 - `Auth__JwtSigningKey` — JWT signing key (use a strong secret)
-- `Auth__JwtExpirationMinutes` — JWT lifetime in minutes
-- `Cors__AllowedOrigins` — comma-separated list of allowed frontend origins (e.g., `http://localhost:5173`)
-- `ConnectionStrings__Default` — PostgreSQL connection string for the cloud database
-- `Storage__S3BucketName` — S3 bucket for clipboard entries
-- `Storage__S3Region` — AWS region for the S3 bucket (e.g., `us-east-1`)
-- `Storage__S3Prefix` — optional prefix for clipboard objects (defaults to `clipboard`)
-- Standard AWS credential environment variables such as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (if applicable), and `AWS_REGION` are required when running locally.
-
-### Web (`apps/web`)
-- `VITE_API_BASE_URL` — API base URL (e.g., `http://localhost:5143`)
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (if applicable) — AWS credentials
+- `AWS_REGION` — AWS region for the S3 bucket (e.g., `us-east-1`)
+- `AWS_BUCKET_NAME` — S3 bucket for clipboard entries
 
 
 ## Running Locally

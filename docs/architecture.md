@@ -50,4 +50,11 @@ Clipboard items are persisted in Amazon S3 per user. For each clipboard item, th
 S3 object metadata includes `user-id`, `item-type`, `created-at`, and optional titles to simplify audit and debugging. The API enforces per-user access to clipboard objects and returns short-lived presigned URLs for previews.
 
 ## Configuration
-Environment variables are used for all secrets and environment-specific values, including the cloud PostgreSQL connection string. The Google OAuth client ID is shared between the API and web via the `VITE_GOOGLE_CLIENT_ID` environment variable. S3 storage requires `Storage__S3BucketName`, `Storage__S3Region`, and optional `Storage__S3Prefix`, along with standard AWS credential variables like `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (if applicable), and `AWS_REGION` when running locally. See `README.md` for the full list.
+Non-secret configuration lives in `config.json` files that sit alongside each app:
+
+- `apps/api/src/config.json` (copied from `config.example.json`)
+- `apps/web/public/config.json` (copied from `config.example.json`)
+
+The web app can also use runtime injection via `apps/web/public/config.js` (copied from `config.example.js`) to avoid a bootstrap fetch.
+
+Secrets and cloud credentials remain in environment variables. The API reads `Auth__JwtSigningKey` from the environment, and S3 access relies on standard AWS credential variables like `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (if applicable), along with `AWS_REGION` and `AWS_BUCKET_NAME` when running locally. See `README.md` for the full list.
