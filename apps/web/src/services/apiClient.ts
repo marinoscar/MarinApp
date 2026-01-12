@@ -1,8 +1,8 @@
 export class ApiClient {
-  private readonly baseUrl: string;
+  private readonly getBaseUrl: () => string;
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, "");
+  constructor(getBaseUrl: () => string) {
+    this.getBaseUrl = getBaseUrl;
   }
 
   async get<T>(path: string, token?: string): Promise<T> {
@@ -43,7 +43,7 @@ export class ApiClient {
       headers.Authorization = `Bearer ${options.token}`;
     }
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const response = await fetch(`${this.getBaseUrl()}${path}`, {
       method: options.method,
       headers,
       body: options.body ? JSON.stringify(options.body) : undefined
@@ -62,7 +62,12 @@ export class ApiClient {
   }
 }
 
-export const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:5143";
+let apiBaseUrl = "http://localhost:5143";
 
-export const apiClient = new ApiClient(API_BASE_URL);
+export const setApiBaseUrl = (value: string): void => {
+  apiBaseUrl = value.replace(/\/$/, "");
+};
+
+export const getApiBaseUrl = (): string => apiBaseUrl;
+
+export const apiClient = new ApiClient(getApiBaseUrl);
