@@ -321,9 +321,17 @@ const App = () => {
               )
             ) : (
               <Stack spacing={3}>
-                <Typography variant="h4" component="h1">
-                  Welcome to MarinApp
-                </Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box
+                    component="img"
+                    src="/android-chrome-512x512.png"
+                    alt="Marin App logo"
+                    sx={{ width: 64, height: 64, borderRadius: 2 }}
+                  />
+                  <Typography variant="h4" component="h1">
+                    Welcome to Marin App
+                  </Typography>
+                </Stack>
                 <Typography color="text.secondary">
                   This MVP validates Google sign-in, issues a secure API token, and fetches your
                   profile from the backend.
