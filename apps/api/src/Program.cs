@@ -20,15 +20,21 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddEnvironmentVariables();
+        // Load only JSON configuration sources so runtime values come from config files.
+        builder.Configuration.Sources.Clear();
+        builder.Configuration
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("config.json", optional: false, reloadOnChange: true);
 
-        var sharedGoogleClientId = builder.Configuration["VITE_GOOGLE_CLIENT_ID"];
-        if (!string.IsNullOrWhiteSpace(sharedGoogleClientId) &&
-            string.IsNullOrWhiteSpace(builder.Configuration["Auth:GoogleClientId"]))
+        // Secrets stay in environment variables and are injected into configuration explicitly.
+        var jwtSigningKey = Environment.GetEnvironmentVariable("Auth__JwtSigningKey");
+        if (string.IsNullOrWhiteSpace(jwtSigningKey))
         {
-            builder.Configuration["Auth:GoogleClientId"] = sharedGoogleClientId;
+            throw new InvalidOperationException("Auth__JwtSigningKey is missing or empty.");
         }
 
+        builder.Configuration["Auth:JwtSigningKey"] = jwtSigningKey;
 
 
         builder.Services.AddControllers();
@@ -82,15 +88,14 @@ public static class Program
 
         var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>() ?? new StorageOptions();
 
-        storageOptions.S3BucketName = builder.Configuration["AWS_BUCKET_NAME"] ?? throw new InvalidOperationException("AWS_BUCKET_NAME configuration is missing or empty.");
-        storageOptions.S3Region = builder.Configuration["AWS_REGION"] ?? throw new InvalidOperationException("AWS_REGION configuration is missing or empty.");
+        storageOptions.S3BucketName = Environment.GetEnvironmentVariable("AWS_BUCKET_NAME")
+            ?? throw new InvalidOperationException("AWS_BUCKET_NAME configuration is missing or empty.");
+        storageOptions.S3Region = Environment.GetEnvironmentVariable("AWS_REGION")
+            ?? throw new InvalidOperationException("AWS_REGION configuration is missing or empty.");
 
-        // If the section was empty, populate and save it back to the configuration
-        if (builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>() == null)
-        {
-            builder.Configuration[StorageOptions.SectionName + ":S3BucketName"] = storageOptions.S3BucketName;
-            builder.Configuration[StorageOptions.SectionName + ":S3Region"] = storageOptions.S3Region;
-        }
+        // Ensure downstream consumers can read storage config from IConfiguration.
+        builder.Configuration[StorageOptions.SectionName + ":S3BucketName"] = storageOptions.S3BucketName;
+        builder.Configuration[StorageOptions.SectionName + ":S3Region"] = storageOptions.S3Region;
 
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -111,15 +116,6 @@ public static class Program
         builder.Services.AddAuthorization();
 
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-        if (allowedOrigins.Length == 0)
-        {
-            var rawOrigins = builder.Configuration["Cors:AllowedOrigins"] ?? builder.Configuration["Cors__AllowedOrigins"];
-            if (!string.IsNullOrWhiteSpace(rawOrigins))
-            {
-                allowedOrigins = rawOrigins
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            }
-        }
 
         if (allowedOrigins.Length == 0)
         {
