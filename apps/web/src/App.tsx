@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -16,6 +16,7 @@ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { AppShell } from "./components/AppShell";
 import { ClipboardView } from "./components/ClipboardView";
 import { authService, ProfileResponse } from "./services/authService";
+import { createClipboardHubConnection } from "./services/clipboardHub";
 import { clipboardService, ClipboardItem } from "./services/clipboardService";
 import { tokenStorage } from "./services/tokenStorage";
 import { createAppTheme, ThemeMode } from "./theme/theme";
@@ -29,10 +30,14 @@ const App = () => {
   const [clipboardItems, setClipboardItems] = useState<ClipboardItem[]>([]);
   const [clipboardLoading, setClipboardLoading] = useState(false);
   const [clipboardError, setClipboardError] = useState<string | null>(null);
+  const [clipboardHubStatus, setClipboardHubStatus] = useState<
+    "idle" | "connecting" | "connected" | "disconnected"
+  >("idle");
   const [textTitle, setTextTitle] = useState("");
   const [textMarkdown, setTextMarkdown] = useState("");
   const [fileUploadTitle, setFileUploadTitle] = useState("");
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname || "/");
+  const clipboardHubRef = useRef<ReturnType<typeof createClipboardHubConnection> | null>(null);
 
   const theme = useMemo(() => createAppTheme(themeMode), [themeMode]);
 
@@ -109,6 +114,70 @@ const App = () => {
       setClipboardItems([]);
     }
   }, [token, loadClipboard]);
+
+  useEffect(() => {
+    if (!token || currentPath !== "/clipboard") {
+      setClipboardHubStatus("idle");
+      if (clipboardHubRef.current) {
+        void clipboardHubRef.current.stop();
+        clipboardHubRef.current = null;
+      }
+      return;
+    }
+
+    let isCancelled = false;
+    let connection: ReturnType<typeof createClipboardHubConnection>;
+    try {
+      connection = createClipboardHubConnection(token);
+    } catch {
+      if (!isCancelled) {
+        setClipboardHubStatus("disconnected");
+      }
+      return;
+    }
+    clipboardHubRef.current = connection;
+    setClipboardHubStatus("connecting");
+
+    const handleClipboardUpdated = () => {
+      void loadClipboard(token);
+    };
+
+    connection.on("ClipboardUpdated", handleClipboardUpdated);
+    connection.onreconnecting(() => {
+      if (!isCancelled) {
+        setClipboardHubStatus("disconnected");
+      }
+    });
+    connection.onreconnected(() => {
+      if (!isCancelled) {
+        setClipboardHubStatus("connected");
+      }
+    });
+    connection.onclose(() => {
+      if (!isCancelled) {
+        setClipboardHubStatus("disconnected");
+      }
+    });
+
+    connection
+      .start()
+      .then(() => {
+        if (!isCancelled) {
+          setClipboardHubStatus("connected");
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setClipboardHubStatus("disconnected");
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+      connection.off("ClipboardUpdated", handleClipboardUpdated);
+      void connection.stop();
+    };
+  }, [currentPath, loadClipboard, token]);
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     if (!response.credential) {
@@ -303,6 +372,7 @@ const App = () => {
                   items={clipboardItems}
                   loading={clipboardLoading}
                   error={clipboardError}
+                  realtimeDisconnected={clipboardHubStatus === "disconnected"}
                   textTitle={textTitle}
                   textMarkdown={textMarkdown}
                   fileTitle={fileUploadTitle}

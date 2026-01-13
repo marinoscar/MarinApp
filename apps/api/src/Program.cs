@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using MarinApp.API.Hubs;
 using MarinApp.API.Options;
 using MarinApp.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -75,6 +76,7 @@ public static class Program
         builder.Services.AddSingleton<IGoogleTokenValidator, GoogleTokenValidator>();
         builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
         builder.Services.AddSingleton<IClipboardStorageService, S3ClipboardStorageService>();
+        builder.Services.AddSignalR();
 
         var authOptions = builder.Configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>();
         if (authOptions is null ||
@@ -111,6 +113,20 @@ public static class Program
                     ValidAudience = authOptions.JwtAudience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authOptions.JwtSigningKey))
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments(ClipboardHub.HubRoute))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         builder.Services.AddAuthorization();
@@ -145,6 +161,7 @@ public static class Program
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+        app.MapHub<ClipboardHub>(ClipboardHub.HubRoute);
 
         app.Run();
     }
