@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { CredentialResponse } from "@react-oauth/google";
 import { authService, ProfileResponse } from "../services/authService";
+import { ApiError } from "../services/apiClient";
 import { tokenStorage } from "../services/tokenStorage";
 
-export const useAuthSession = () => {
+interface AuthSessionOptions {
+  onUnauthorized?: () => void;
+}
+
+export const useAuthSession = ({ onUnauthorized }: AuthSessionOptions = {}) => {
   const [token, setToken] = useState<string | null>(() => tokenStorage.get());
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,11 +22,18 @@ export const useAuthSession = () => {
       setProfile(data);
     } catch (err) {
       setProfile(null);
+      if (err instanceof ApiError && err.status === 401) {
+        tokenStorage.clear();
+        setToken(null);
+        setError(null);
+        onUnauthorized?.();
+        return;
+      }
       setError(err instanceof Error ? err.message : "Failed to load profile");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onUnauthorized]);
 
   useEffect(() => {
     if (token) {
@@ -58,6 +70,7 @@ export const useAuthSession = () => {
     tokenStorage.clear();
     setToken(null);
     setProfile(null);
+    onUnauthorized?.();
   };
 
   return {

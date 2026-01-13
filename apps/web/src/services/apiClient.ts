@@ -1,3 +1,12 @@
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export class ApiClient {
   private readonly getBaseUrl: () => string;
 
@@ -51,7 +60,7 @@ export class ApiClient {
 
     if (!response.ok) {
       const message = await response.text();
-      throw new Error(message || "Request failed");
+      throw new ApiError(message || "Request failed", response.status);
     }
 
     if (response.status === 204) {

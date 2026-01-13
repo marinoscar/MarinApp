@@ -21,6 +21,11 @@ MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
 - **Storage**: `sessionStorage`
 - **Rationale**: keeps the token scoped to the browser session and avoids persistence across restarts. This is still susceptible to XSS; therefore UI code must avoid unsafe HTML injection and third-party scripts.
 
+### Session Expiration Handling
+- Any request that returns `401 Unauthorized` clears the session client-side.
+- When navigating to protected routes without a valid session, the frontend redirects to the sign-in view and stores the originating path in `sessionStorage`.
+- After successful authentication, the frontend consumes the stored return path and navigates the user back to the original route.
+
 ## Trust Boundaries
 - The **frontend is untrusted** and must never access databases or storage directly.
 - All authorization checks happen in the **backend**.

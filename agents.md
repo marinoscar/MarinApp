@@ -98,6 +98,7 @@ Agents MUST NOT:
 - The backend is responsible for issuing and validating its own access tokens
 - Tokens must be short-lived
 - Authorization decisions must live exclusively in the backend
+- Frontend must redirect to the sign-in flow on any unauthorized access to protected routes and store a return path so the user returns to the originating route after authentication
 
 Token storage strategy must be:
 - Explicitly chosen
