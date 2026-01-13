@@ -24,6 +24,7 @@ import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import DescriptionIcon from "@mui/icons-material/Description";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import ImageIcon from "@mui/icons-material/Image";
 import VideocamIcon from "@mui/icons-material/Videocam";
@@ -46,6 +47,7 @@ interface ClipboardViewProps {
   onFilesSelected: (files: File[]) => void;
   onPasteText: (text: string) => void;
   onDeleteItem: (itemId: string) => void;
+  onRefresh: () => void;
 }
 
 export const ClipboardView = ({
@@ -64,7 +66,8 @@ export const ClipboardView = ({
   onPasteClipboardItem,
   onFilesSelected,
   onPasteText,
-  onDeleteItem
+  onDeleteItem,
+  onRefresh
 }: ClipboardViewProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -303,6 +306,18 @@ export const ClipboardView = ({
               disabled={loading}
             >
               <ContentPasteIcon />
+            </Fab>
+          </span>
+        </Tooltip>
+        <Tooltip title="Refresh items">
+          <span>
+            <Fab
+              color="secondary"
+              aria-label="Refresh clipboard items"
+              onClick={onRefresh}
+              disabled={loading}
+            >
+              <RefreshIcon />
             </Fab>
           </span>
         </Tooltip>

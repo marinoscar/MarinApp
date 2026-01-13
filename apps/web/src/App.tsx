@@ -57,7 +57,8 @@ const App = () => {
     handlePasteClipboardItem,
     handlePasteText,
     handleFileUpload,
-    handleDeleteItem
+    handleDeleteItem,
+    handleRefresh
   } = useClipboard(token, currentPath === "/clipboard", handleSessionExpired);
 
   const theme = useMemo(() => createAppTheme(themeMode), [themeMode]);
@@ -111,6 +112,7 @@ const App = () => {
                   onFilesSelected={handleFileUpload}
                   onPasteText={handlePasteText}
                   onDeleteItem={handleDeleteItem}
+                  onRefresh={handleRefresh}
                 />
               ) : (
                 <Box display="flex" justifyContent="center" py={6}>
