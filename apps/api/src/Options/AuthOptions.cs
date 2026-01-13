@@ -33,5 +33,5 @@ public class AuthOptions
     /// <summary>
     /// Gets or sets the JWT expiration window in minutes.
     /// </summary>
-    public int JwtExpirationMinutes { get; set; } = 60;
+    public int JwtExpirationMinutes { get; set; } = 43200;
 }
