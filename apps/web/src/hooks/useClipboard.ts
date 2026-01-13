@@ -22,6 +22,7 @@ interface ClipboardState {
   handlePasteText: (text: string) => Promise<void>;
   handleFileUpload: (files: File[]) => Promise<void>;
   handleDeleteItem: (itemId: string) => Promise<void>;
+  handleRefresh: () => Promise<void>;
 }
 
 export const useClipboard = (
@@ -312,6 +313,14 @@ export const useClipboard = (
     [handleUnauthorized, loadClipboard, token]
   );
 
+  const handleRefresh = useCallback(async () => {
+    if (!token) {
+      return;
+    }
+
+    await loadClipboard(token);
+  }, [loadClipboard, token]);
+
   return {
     items,
     loading,
@@ -328,6 +337,7 @@ export const useClipboard = (
     handlePasteClipboardItem,
     handlePasteText,
     handleFileUpload,
-    handleDeleteItem
+    handleDeleteItem,
+    handleRefresh
   };
 };
