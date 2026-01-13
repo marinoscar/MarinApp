@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError } from "../services/apiClient";
 import { createClipboardHubConnection } from "../services/clipboardHub";
 import { clipboardService, ClipboardItem } from "../services/clipboardService";
 
@@ -23,7 +24,11 @@ interface ClipboardState {
   handleDeleteItem: (itemId: string) => Promise<void>;
 }
 
-export const useClipboard = (token: string | null, isActive: boolean): ClipboardState => {
+export const useClipboard = (
+  token: string | null,
+  isActive: boolean,
+  onUnauthorized?: () => void
+): ClipboardState => {
   const [items, setItems] = useState<ClipboardItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,18 +38,36 @@ export const useClipboard = (token: string | null, isActive: boolean): Clipboard
   const [fileUploadTitle, setFileUploadTitle] = useState("");
   const clipboardHubRef = useRef<ReturnType<typeof createClipboardHubConnection> | null>(null);
 
-  const loadClipboard = useCallback(async (accessToken: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await clipboardService.list(accessToken);
-      setItems(data.items);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load clipboard");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const handleUnauthorized = useCallback(
+    (err: unknown): boolean => {
+      if (err instanceof ApiError && err.status === 401) {
+        setError(null);
+        onUnauthorized?.();
+        return true;
+      }
+      return false;
+    },
+    [onUnauthorized]
+  );
+
+  const loadClipboard = useCallback(
+    async (accessToken: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await clipboardService.list(accessToken);
+        setItems(data.items);
+      } catch (err) {
+        if (handleUnauthorized(err)) {
+          return;
+        }
+        setError(err instanceof Error ? err.message : "Failed to load clipboard");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [handleUnauthorized]
+  );
 
   useEffect(() => {
     if (token) {
@@ -134,11 +157,14 @@ export const useClipboard = (token: string | null, isActive: boolean): Clipboard
       setTextMarkdown("");
       await loadClipboard(token);
     } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Failed to save text");
     } finally {
       setLoading(false);
     }
-  }, [loadClipboard, textMarkdown, textTitle, token]);
+  }, [handleUnauthorized, loadClipboard, textMarkdown, textTitle, token]);
 
   const handlePasteFromClipboard = useCallback(async () => {
     if (!navigator.clipboard?.readText) {
@@ -202,11 +228,14 @@ export const useClipboard = (token: string | null, isActive: boolean): Clipboard
         setError("Clipboard does not contain supported data.");
       }
     } catch (err) {
+      if (handleUnauthorized(err)) {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Failed to read clipboard");
     } finally {
       setLoading(false);
     }
-  }, [fileUploadTitle, loadClipboard, textTitle, token]);
+  }, [fileUploadTitle, handleUnauthorized, loadClipboard, textTitle, token]);
 
   const handlePasteText = useCallback(
     async (text: string) => {
@@ -223,12 +252,15 @@ export const useClipboard = (token: string | null, isActive: boolean): Clipboard
         });
         await loadClipboard(token);
       } catch (err) {
+        if (handleUnauthorized(err)) {
+          return;
+        }
         setError(err instanceof Error ? err.message : "Failed to save text");
       } finally {
         setLoading(false);
       }
     },
-    [loadClipboard, textTitle, token]
+    [handleUnauthorized, loadClipboard, textTitle, token]
   );
 
   const handleFileUpload = useCallback(
@@ -246,12 +278,15 @@ export const useClipboard = (token: string | null, isActive: boolean): Clipboard
         setFileUploadTitle("");
         await loadClipboard(token);
       } catch (err) {
+        if (handleUnauthorized(err)) {
+          return;
+        }
         setError(err instanceof Error ? err.message : "Failed to upload file");
       } finally {
         setLoading(false);
       }
     },
-    [fileUploadTitle, loadClipboard, token]
+    [fileUploadTitle, handleUnauthorized, loadClipboard, token]
   );
 
   const handleDeleteItem = useCallback(
@@ -266,12 +301,15 @@ export const useClipboard = (token: string | null, isActive: boolean): Clipboard
         await clipboardService.deleteItem(token, itemId);
         await loadClipboard(token);
       } catch (err) {
+        if (handleUnauthorized(err)) {
+          return;
+        }
         setError(err instanceof Error ? err.message : "Failed to delete item");
       } finally {
         setLoading(false);
       }
     },
-    [loadClipboard, token]
+    [handleUnauthorized, loadClipboard, token]
   );
 
   return {

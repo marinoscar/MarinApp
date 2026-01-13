@@ -24,6 +24,8 @@ The web app can also load config from `apps/web/public/config.js` if you prefer 
 
 These config files hold non-secret configuration such as Google OAuth client IDs, CORS origins, and base URLs.
 
+The API reads `Auth:JwtExpirationMinutes` from `apps/api/src/config.json` to control how long access tokens remain valid (default: 43200 minutes / 30 days).
+
 ### Environment Variables (secrets + AWS)
 Copy `apps/web/.env.example` and export the values in your shell or via your process manager.
 
@@ -65,5 +67,6 @@ The web app will be available at `http://localhost:5173`.
 - `docs/architecture.md` — System architecture, auth flow, and trust boundaries.
 
 ## Notes
-- The frontend stores the API JWT in `sessionStorage` and sends it as a Bearer token on every API request.
+- The frontend stores the API JWT in `localStorage` and sends it as a Bearer token on every API request to preserve sessions across restarts.
+- When a protected route is accessed without a valid session, the app redirects to sign-in and returns to the originating route after authentication.
 - Do not commit secrets to the repository.
