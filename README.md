@@ -59,6 +59,7 @@ The web app will be available at `http://localhost:5173`.
 - `POST /api/clipboard/text` — Create a Markdown text clipboard item.
 - `POST /api/clipboard/files` — Upload a file or image to the clipboard.
 - `DELETE /api/clipboard/{itemId}` — Delete a clipboard item.
+- `GET /hubs/clipboard` — SignalR hub that streams clipboard updates to connected clients.
 
 ## Documentation
 - `docs/architecture.md` — System architecture, auth flow, and trust boundaries.

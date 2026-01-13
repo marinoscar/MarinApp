@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -12,275 +12,46 @@ import {
   ThemeProvider,
   Typography
 } from "@mui/material";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { AppShell } from "./components/AppShell";
 import { ClipboardView } from "./components/ClipboardView";
-import { authService, ProfileResponse } from "./services/authService";
-import { clipboardService, ClipboardItem } from "./services/clipboardService";
-import { tokenStorage } from "./services/tokenStorage";
+import { useAppNavigation } from "./hooks/useAppNavigation";
+import { useAuthSession } from "./hooks/useAuthSession";
+import { useClipboard } from "./hooks/useClipboard";
 import { createAppTheme, ThemeMode } from "./theme/theme";
 
 const App = () => {
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
-  const [token, setToken] = useState<string | null>(() => tokenStorage.get());
-  const [profile, setProfile] = useState<ProfileResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [clipboardItems, setClipboardItems] = useState<ClipboardItem[]>([]);
-  const [clipboardLoading, setClipboardLoading] = useState(false);
-  const [clipboardError, setClipboardError] = useState<string | null>(null);
-  const [textTitle, setTextTitle] = useState("");
-  const [textMarkdown, setTextMarkdown] = useState("");
-  const [fileUploadTitle, setFileUploadTitle] = useState("");
-  const [currentPath, setCurrentPath] = useState(() => window.location.pathname || "/");
+  const { currentPath, navigate } = useAppNavigation();
+  const {
+    token,
+    profile,
+    loading,
+    error,
+    handleGoogleSuccess,
+    handleGoogleError,
+    handleLogout
+  } = useAuthSession();
+  const {
+    items: clipboardItems,
+    loading: clipboardLoading,
+    error: clipboardError,
+    hubStatus: clipboardHubStatus,
+    textTitle,
+    textMarkdown,
+    fileUploadTitle,
+    setTextTitle,
+    setTextMarkdown,
+    setFileUploadTitle,
+    handleSaveText,
+    handlePasteFromClipboard,
+    handlePasteClipboardItem,
+    handlePasteText,
+    handleFileUpload,
+    handleDeleteItem
+  } = useClipboard(token, currentPath === "/clipboard");
 
   const theme = useMemo(() => createAppTheme(themeMode), [themeMode]);
-
-  const loadProfile = useCallback(
-    async (accessToken: string) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await authService.fetchProfile(accessToken);
-        setProfile(data);
-      } catch (err) {
-        setProfile(null);
-        setError(err instanceof Error ? err.message : "Failed to load profile");
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (token) {
-      void loadProfile(token);
-    } else {
-      setProfile(null);
-    }
-  }, [token, loadProfile]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname || "/");
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  const navigate = useCallback((path: string) => {
-    if (window.location.pathname !== path) {
-      window.history.pushState({}, "", path);
-    }
-    setCurrentPath(path);
-  }, []);
-
-  useEffect(() => {
-    if (currentPath !== "/" && currentPath !== "/clipboard") {
-      navigate("/");
-    }
-  }, [currentPath, navigate]);
-
-  const loadClipboard = useCallback(
-    async (accessToken: string) => {
-      setClipboardLoading(true);
-      setClipboardError(null);
-      try {
-        const data = await clipboardService.list(accessToken);
-        setClipboardItems(data.items);
-      } catch (err) {
-        setClipboardError(err instanceof Error ? err.message : "Failed to load clipboard");
-      } finally {
-        setClipboardLoading(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (token) {
-      void loadClipboard(token);
-    } else {
-      setClipboardItems([]);
-    }
-  }, [token, loadClipboard]);
-
-  const handleGoogleSuccess = async (response: CredentialResponse) => {
-    if (!response.credential) {
-      setError("Google sign-in did not return a credential.");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const authResponse = await authService.exchangeGoogleToken(response.credential);
-      tokenStorage.set(authResponse.accessToken);
-      setToken(authResponse.accessToken);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    tokenStorage.clear();
-    setToken(null);
-    setProfile(null);
-  };
-
-  const handleSaveText = async () => {
-    if (!token || !textMarkdown.trim()) {
-      return;
-    }
-
-    setClipboardLoading(true);
-    setClipboardError(null);
-    try {
-      await clipboardService.createText(token, {
-        title: textTitle.trim() || undefined,
-        markdownContent: textMarkdown
-      });
-      setTextTitle("");
-      setTextMarkdown("");
-      await loadClipboard(token);
-    } catch (err) {
-      setClipboardError(err instanceof Error ? err.message : "Failed to save text");
-    } finally {
-      setClipboardLoading(false);
-    }
-  };
-
-  const handlePasteFromClipboard = async () => {
-    if (!navigator.clipboard?.readText) {
-      setClipboardError("Clipboard access is not available in this browser.");
-      return;
-    }
-
-    try {
-      const clipText = await navigator.clipboard.readText();
-      setTextMarkdown((current) => `${current}${current ? "\n" : ""}${clipText}`);
-    } catch (err) {
-      setClipboardError(err instanceof Error ? err.message : "Failed to read clipboard");
-    }
-  };
-
-  const handlePasteClipboardItem = async () => {
-    if (!token) {
-      return;
-    }
-
-    if (!navigator.clipboard?.read) {
-      setClipboardError("Clipboard read access is not available in this browser.");
-      return;
-    }
-
-    setClipboardLoading(true);
-    setClipboardError(null);
-    try {
-      const clipboardItems = await navigator.clipboard.read();
-      let didHandle = false;
-
-      for (const clipboardItem of clipboardItems) {
-        if (clipboardItem.types.includes("text/plain")) {
-          const textBlob = await clipboardItem.getType("text/plain");
-          const clipboardText = await textBlob.text();
-          if (clipboardText.trim()) {
-            await clipboardService.createText(token, {
-              title: textTitle.trim() || undefined,
-              markdownContent: clipboardText
-            });
-            didHandle = true;
-          }
-        }
-
-        for (const type of clipboardItem.types) {
-          if (type.startsWith("text/")) {
-            continue;
-          }
-
-          const blob = await clipboardItem.getType(type);
-          const extension = type.split("/")[1] ?? "bin";
-          const file = new File([blob], `clipboard-${Date.now()}.${extension}`, { type });
-          await clipboardService.uploadFile(token, file, fileUploadTitle.trim() || undefined);
-          didHandle = true;
-        }
-      }
-
-      if (didHandle) {
-        await loadClipboard(token);
-      } else {
-        setClipboardError("Clipboard does not contain supported data.");
-      }
-    } catch (err) {
-      setClipboardError(err instanceof Error ? err.message : "Failed to read clipboard");
-    } finally {
-      setClipboardLoading(false);
-    }
-  };
-
-  const handlePasteText = async (text: string) => {
-    if (!token || !text.trim()) {
-      return;
-    }
-
-    setClipboardLoading(true);
-    setClipboardError(null);
-    try {
-      await clipboardService.createText(token, {
-        title: textTitle.trim() || undefined,
-        markdownContent: text
-      });
-      await loadClipboard(token);
-    } catch (err) {
-      setClipboardError(err instanceof Error ? err.message : "Failed to save text");
-    } finally {
-      setClipboardLoading(false);
-    }
-  };
-
-  const handleFileUpload = async (files: File[]) => {
-    if (!token || files.length === 0) {
-      return;
-    }
-
-    setClipboardLoading(true);
-    setClipboardError(null);
-    try {
-      for (const file of files) {
-        await clipboardService.uploadFile(token, file, fileUploadTitle.trim() || undefined);
-      }
-      setFileUploadTitle("");
-      await loadClipboard(token);
-    } catch (err) {
-      setClipboardError(err instanceof Error ? err.message : "Failed to upload file");
-    } finally {
-      setClipboardLoading(false);
-    }
-  };
-
-  const handleDeleteItem = async (itemId: string) => {
-    if (!token) {
-      return;
-    }
-
-    setClipboardLoading(true);
-    setClipboardError(null);
-    try {
-      await clipboardService.deleteItem(token, itemId);
-      await loadClipboard(token);
-    } catch (err) {
-      setClipboardError(err instanceof Error ? err.message : "Failed to delete item");
-    } finally {
-      setClipboardLoading(false);
-    }
-  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -303,6 +74,7 @@ const App = () => {
                   items={clipboardItems}
                   loading={clipboardLoading}
                   error={clipboardError}
+                  realtimeDisconnected={clipboardHubStatus === "disconnected"}
                   textTitle={textTitle}
                   textMarkdown={textMarkdown}
                   fileTitle={fileUploadTitle}
@@ -352,7 +124,7 @@ const App = () => {
                         </Typography>
                         <GoogleLogin
                           onSuccess={handleGoogleSuccess}
-                          onError={() => setError("Google sign-in failed.")}
+                          onError={handleGoogleError}
                         />
                       </Stack>
                     </CardContent>
