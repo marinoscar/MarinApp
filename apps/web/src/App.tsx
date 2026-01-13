@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -18,11 +18,17 @@ import { ClipboardView } from "./components/ClipboardView";
 import { useAppNavigation } from "./hooks/useAppNavigation";
 import { useAuthSession } from "./hooks/useAuthSession";
 import { useClipboard } from "./hooks/useClipboard";
+import { authRedirect } from "./services/authRedirect";
 import { createAppTheme, ThemeMode } from "./theme/theme";
 
 const App = () => {
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
   const { currentPath, navigate } = useAppNavigation();
+  const handleUnauthorized = useCallback(() => {
+    authRedirect.store(currentPath);
+    navigate("/");
+  }, [currentPath, navigate]);
+
   const {
     token,
     profile,
@@ -31,7 +37,10 @@ const App = () => {
     handleGoogleSuccess,
     handleGoogleError,
     handleLogout
-  } = useAuthSession();
+  } = useAuthSession({ onUnauthorized: handleUnauthorized });
+  const handleSessionExpired = useCallback(() => {
+    handleLogout();
+  }, [handleLogout]);
   const {
     items: clipboardItems,
     loading: clipboardLoading,
@@ -49,9 +58,24 @@ const App = () => {
     handlePasteText,
     handleFileUpload,
     handleDeleteItem
-  } = useClipboard(token, currentPath === "/clipboard");
+  } = useClipboard(token, currentPath === "/clipboard", handleSessionExpired);
 
   const theme = useMemo(() => createAppTheme(themeMode), [themeMode]);
+
+  useEffect(() => {
+    if (currentPath === "/clipboard" && !token) {
+      handleUnauthorized();
+    }
+  }, [currentPath, handleUnauthorized, token]);
+
+  useEffect(() => {
+    if (token && profile) {
+      const returnTo = authRedirect.consume();
+      if (returnTo && returnTo !== currentPath) {
+        navigate(returnTo);
+      }
+    }
+  }, [currentPath, navigate, profile, token]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -89,7 +113,14 @@ const App = () => {
                   onDeleteItem={handleDeleteItem}
                 />
               ) : (
-                <Alert severity="info">Please sign in to access the clipboard.</Alert>
+                <Box display="flex" justifyContent="center" py={6}>
+                  <Stack spacing={2} alignItems="center">
+                    <CircularProgress />
+                    <Typography color="text.secondary">
+                      Redirecting to sign-in…
+                    </Typography>
+                  </Stack>
+                </Box>
               )
             ) : (
               <Stack spacing={3}>

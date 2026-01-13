@@ -66,4 +66,5 @@ The web app will be available at `http://localhost:5173`.
 
 ## Notes
 - The frontend stores the API JWT in `sessionStorage` and sends it as a Bearer token on every API request.
+- When a protected route is accessed without a valid session, the app redirects to sign-in and returns to the originating route after authentication.
 - Do not commit secrets to the repository.
