@@ -34,6 +34,7 @@ MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
 - `POST /api/clipboard/text`: Stores Markdown text in the user's clipboard.
 - `POST /api/clipboard/files`: Stores a file or image in the user's clipboard.
 - `DELETE /api/clipboard/{itemId}`: Deletes a clipboard item.
+- `GET /hubs/clipboard`: SignalR hub that pushes clipboard updates to connected clients.
 
 ## Security Controls
 - JWT validation enforces issuer, audience, signature, and expiration.
@@ -48,6 +49,9 @@ Clipboard items are persisted in Amazon S3 per user. For each clipboard item, th
 - `content` for file/image uploads.
 
 S3 object metadata includes `user-id`, `item-type`, `created-at`, and optional titles to simplify audit and debugging. The API enforces per-user access to clipboard objects and returns short-lived presigned URLs for previews.
+
+## Real-Time Clipboard Updates
+The API exposes a SignalR hub at `/hubs/clipboard`. Authenticated clients connect with their JWT and are grouped per user. When a clipboard item is created, the API broadcasts a `ClipboardUpdated` event to the user's group so connected clients can refresh their clipboard list in real time.
 
 ## Configuration
 Non-secret configuration lives in `config.json` files that sit alongside each app:

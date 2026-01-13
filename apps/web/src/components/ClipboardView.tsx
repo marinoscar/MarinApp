@@ -12,6 +12,7 @@ import {
   Fab,
   Grid,
   IconButton,
+  Link,
   Stack,
   TextField,
   Tooltip,
@@ -32,6 +33,7 @@ interface ClipboardViewProps {
   items: ClipboardItem[];
   loading: boolean;
   error: string | null;
+  realtimeDisconnected: boolean;
   textTitle: string;
   textMarkdown: string;
   fileTitle: string;
@@ -50,6 +52,7 @@ export const ClipboardView = ({
   items,
   loading,
   error,
+  realtimeDisconnected,
   textTitle,
   textMarkdown,
   fileTitle,
@@ -399,6 +402,15 @@ export const ClipboardView = ({
       <Card>
         <CardHeader title="Your clipboard" subheader="Newest items appear first." />
         <CardContent onPaste={handlePasteFiles} tabIndex={0}>
+          {realtimeDisconnected && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              Real-time updates are disconnected.{" "}
+              <Link component="button" onClick={() => window.location.reload()}>
+                Refresh the page
+              </Link>{" "}
+              to reconnect.
+            </Alert>
+          )}
           {error && <Alert severity="error">{error}</Alert>}
           {loading && (
             <Box display="flex" justifyContent="center" py={2}>

@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using MarinApp.API.Dtos;
+using MarinApp.API.Hubs;
 using MarinApp.API.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,14 +17,18 @@ namespace MarinApp.API.Controllers;
 public class ClipboardController : ControllerBase
 {
     private readonly IClipboardStorageService _clipboardStorageService;
+    private readonly IHubContext<ClipboardHub> _clipboardHub;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClipboardController"/> class.
     /// </summary>
     /// <param name="clipboardStorageService">The clipboard storage service.</param>
-    public ClipboardController(IClipboardStorageService clipboardStorageService)
+    public ClipboardController(
+        IClipboardStorageService clipboardStorageService,
+        IHubContext<ClipboardHub> clipboardHub)
     {
         _clipboardStorageService = clipboardStorageService;
+        _clipboardHub = clipboardHub;
     }
 
     /// <summary>
@@ -71,6 +77,15 @@ public class ClipboardController : ControllerBase
         }
 
         var itemId = await _clipboardStorageService.CreateTextAsync(userId, request, cancellationToken);
+        await _clipboardHub.Clients.Group(ClipboardHub.GetUserGroup(userId)).SendAsync(
+            "ClipboardUpdated",
+            new ClipboardUpdateMessage
+            {
+                ItemId = itemId,
+                UpdateType = "created",
+                UpdatedAt = DateTimeOffset.UtcNow
+            },
+            cancellationToken);
         return CreatedAtAction(nameof(List), new ClipboardTextCreateResponse { Id = itemId });
     }
 
@@ -109,6 +124,16 @@ public class ClipboardController : ControllerBase
             file.Length,
             stream,
             title,
+            cancellationToken);
+
+        await _clipboardHub.Clients.Group(ClipboardHub.GetUserGroup(userId)).SendAsync(
+            "ClipboardUpdated",
+            new ClipboardUpdateMessage
+            {
+                ItemId = itemId,
+                UpdateType = "created",
+                UpdatedAt = DateTimeOffset.UtcNow
+            },
             cancellationToken);
 
         return CreatedAtAction(nameof(List), new ClipboardTextCreateResponse { Id = itemId });
