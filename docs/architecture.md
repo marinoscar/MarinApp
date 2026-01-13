@@ -14,17 +14,18 @@ MarinApp uses Google OAuth for user identity, but the API issues its own JWTs.
 1. User signs in with Google on the frontend.
 2. The frontend sends the Google ID token to `POST /api/auth/google`.
 3. The backend validates the Google token and issues a short-lived JWT access token.
-4. The frontend stores the API JWT in **sessionStorage** and attaches it to all API requests in the `Authorization: Bearer <token>` header.
+4. The frontend stores the API JWT in **localStorage** and attaches it to all API requests in the `Authorization: Bearer <token>` header.
 5. The backend validates JWTs for all protected endpoints.
 
 ### Token Storage Strategy
-- **Storage**: `sessionStorage`
-- **Rationale**: keeps the token scoped to the browser session and avoids persistence across restarts. This is still susceptible to XSS; therefore UI code must avoid unsafe HTML injection and third-party scripts.
+- **Storage**: `localStorage`
+- **Rationale**: persists the token across restarts to provide a long-lived session. This is still susceptible to XSS; therefore UI code must avoid unsafe HTML injection and third-party scripts.
 
 ### Session Expiration Handling
 - Any request that returns `401 Unauthorized` clears the session client-side.
 - When navigating to protected routes without a valid session, the frontend redirects to the sign-in view and stores the originating path in `sessionStorage`.
 - After successful authentication, the frontend consumes the stored return path and navigates the user back to the original route.
+- The API uses `Auth:JwtExpirationMinutes` (default: 43200 minutes / 30 days) to control access token lifetime.
 
 ## Trust Boundaries
 - The **frontend is untrusted** and must never access databases or storage directly.
